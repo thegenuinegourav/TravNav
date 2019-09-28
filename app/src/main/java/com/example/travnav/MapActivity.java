@@ -132,10 +132,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 location.addOnCompleteListener(new OnCompleteListener() {
                     @Override
                     public void onComplete(@NonNull Task task) {
-                        if(task.isSuccessful()){
+                        if(task.isSuccessful() && task.getResult()!=null){
                             Log.d(TAG, "onComplete: found location!");
                             Location currentLocation = (Location) task.getResult();
 
+                            mSearchText.setText("Use Current Location");
                             moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()),
                                     DEFAULT_ZOOM,
                                     "My Location");
@@ -156,13 +157,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         Log.d(TAG, "moveCamera: moving the camera to: lat: " + latLng.latitude + ", lng: " + latLng.longitude );
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
 
-        if(!title.equals("My Location")){
-            MarkerOptions options = new MarkerOptions()
-                    .position(latLng)
-                    .title(title);
-            mMap.addMarker(options);
-        }
-
+        MarkerOptions options = new MarkerOptions()
+                .position(latLng)
+                .title(title);
+        mMap.addMarker(options);
         hideSoftKeyboard();
     }
 
