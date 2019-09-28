@@ -30,14 +30,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init(){
-        Button btnMap = (Button) findViewById(R.id.btnMap);
-        btnMap.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, MapActivity.class);
-                startActivity(intent);
-            }
-        });
+        Intent intent = new Intent(MainActivity.this, MapActivity.class);
+        startActivity(intent);
     }
 
     public boolean isServicesOK(){
