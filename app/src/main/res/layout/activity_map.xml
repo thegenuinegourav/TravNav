@@ -28,7 +28,6 @@
             android:textSize="15sp"
             android:textColor="#000"
             android:id="@+id/input_search"
-            android:padding="10dp"
             android:background="@null"
             android:hint="Enter Address, City or Zip Code"
             android:imeOptions="actionSearch"
