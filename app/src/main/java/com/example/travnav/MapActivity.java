@@ -105,6 +105,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                     //execute our method for searching
                     geoLocate();
+                    return true;
                 }
 
                 return false;

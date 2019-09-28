@@ -31,7 +31,8 @@
             android:id="@+id/input_search"
             android:background="@null"
             android:hint="Enter Address, City or Zip Code"
-            android:imeOptions="actionSearch"/>
+            android:imeOptions="actionSearch"
+            android:inputType="text"/>
 
 
     </RelativeLayout>
