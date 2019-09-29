@@ -12,10 +12,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,6 +27,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -44,7 +49,7 @@ import java.util.List;
  * Created by User on 10/2/2017.
  */
 
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, OnDestinationEditTextClickListener {
 
     private static final String TAG = "MapActivity";
 
@@ -54,24 +59,29 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private static final float DEFAULT_ZOOM = 15f;
 
     //widgets
-    private EditText mSearchText, mSearchText2, mSearchText3, mSearchText4;
+    private EditText sourceEditText;
     private ImageView mGps;
+    private Button addDestinationBtn;
+    private RecyclerView destinationsRcyclrVw;
+
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
 
     //vars
     private Boolean mLocationPermissionsGranted = false;
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private Location currentLocation;
+    private int destinationPosition = 0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
-        mSearchText = (EditText) findViewById(R.id.input_search);
-        mSearchText2 = (EditText) findViewById(R.id.input_search_2);
-        mSearchText3 = (EditText) findViewById(R.id.input_search_3);
-        mSearchText4 = (EditText) findViewById(R.id.input_search_4);
+        sourceEditText = (EditText) findViewById(R.id.source);
         mGps = (ImageView) findViewById(R.id.ic_gps);
+        addDestinationBtn = (Button) findViewById(R.id.btn_add_destination);
+        destinationsRcyclrVw = (RecyclerView) findViewById(R.id.recycler_view_destinations);
 
         getLocationPermission();
     }
@@ -142,7 +152,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             Log.d(TAG, "onComplete: found location!");
                             Location currentLocation = (Location) task.getResult();
                             setCurrentLocation(currentLocation);
-                            mSearchText.setText("Use Current Location");
+                            sourceEditText.setText("Use Current Location");
                             moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()),
                                     DEFAULT_ZOOM,
                                     "My Location");
@@ -177,7 +187,32 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void init(){
         Log.d(TAG, "init: initializing");
 
-        mSearchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        final List<Integer> destinationsListCounts = new ArrayList<>();
+
+        // Define a layout for RecyclerView
+        mLayoutManager = new LinearLayoutManager(this);
+        destinationsRcyclrVw.setLayoutManager(mLayoutManager);
+
+        // Initialize a new instance of RecyclerView Adapter instance
+        mAdapter = new DestinationAdapter(this, destinationsListCounts);
+
+        // Set the adapter for RecyclerView
+        destinationsRcyclrVw.setAdapter(mAdapter);
+
+        addDestinationBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                destinationsListCounts.add(destinationPosition);
+                mAdapter.notifyItemInserted(destinationPosition);
+                destinationsRcyclrVw.scrollToPosition(destinationPosition);
+                // Show the added item label
+                //Toast.makeText(MapActivity.this, "Added Destination View with position : " + destinationPosition, Toast.LENGTH_SHORT).show();
+                destinationPosition++;
+            }
+        });
+
+
+        sourceEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
                 if(actionId == EditorInfo.IME_ACTION_SEARCH
@@ -185,66 +220,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         || keyEvent.getAction() == KeyEvent.ACTION_DOWN
                         || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER){
 
-
-                    if (!mSearchText.getText().toString().equals("Use Current Location")) {
+                    String source = sourceEditText.getText().toString();
+                    if (!source.equals("Use Current Location")) {
                         //execute our method for searching
-                        geoLocate(mSearchText);
+                        geoLocateAndMoveCamera(source);
                     }
-
                     return true;
                 }
-
-                return false;
-            }
-        });
-
-        mSearchText2.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
-                if(actionId == EditorInfo.IME_ACTION_SEARCH
-                        || actionId == EditorInfo.IME_ACTION_DONE
-                        || keyEvent.getAction() == KeyEvent.ACTION_DOWN
-                        || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER){
-
-                    //execute our method for searching
-                    geoLocate(mSearchText2);
-                    return true;
-                }
-
-                return false;
-            }
-        });
-
-        mSearchText3.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
-                if(actionId == EditorInfo.IME_ACTION_SEARCH
-                        || actionId == EditorInfo.IME_ACTION_DONE
-                        || keyEvent.getAction() == KeyEvent.ACTION_DOWN
-                        || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER){
-
-                    //execute our method for searching
-                    geoLocate(mSearchText3);
-                    return true;
-                }
-
-                return false;
-            }
-        });
-
-        mSearchText4.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
-                if(actionId == EditorInfo.IME_ACTION_SEARCH
-                        || actionId == EditorInfo.IME_ACTION_DONE
-                        || keyEvent.getAction() == KeyEvent.ACTION_DOWN
-                        || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER){
-
-                    //execute our method for searching
-                    geoLocate(mSearchText4);
-                    return true;
-                }
-
                 return false;
             }
         });
@@ -260,10 +242,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         hideSoftKeyboard();
     }
 
-    private void geoLocate(EditText mSearchText){
+    private void geoLocateAndMoveCamera(String searchString){
         Log.d(TAG, "geoLocate: geolocating");
-
-        String searchString = mSearchText.getText().toString();
 
         Geocoder geocoder = new Geocoder(MapActivity.this);
         List<Address> list = new ArrayList<>();
@@ -327,20 +307,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         startActivity(intent);
     }
 
+    //TODO fix this method
     public ArrayList<Location> getLocationsFromEditTexts() {
         ArrayList<Location> locations = new ArrayList<>();
-        String searchString = mSearchText.getText().toString();
-        if (searchString.equals("Use Current Location")) {
-            locations.add(currentLocation);
-        }else {
-            locations.add(geoLocate(searchString));
-        }
-        searchString = mSearchText2.getText().toString();
-        locations.add(geoLocate(searchString));
-        searchString = mSearchText3.getText().toString();
-        locations.add(geoLocate(searchString));
-        searchString = mSearchText4.getText().toString();
-        locations.add(geoLocate(searchString));
+//        String searchString = sourceEditText.getText().toString();
+//        if (searchString.equals("Use Current Location")) {
+//            locations.add(currentLocation);
+//        }else {
+//            locations.add(geoLocate(searchString));
+//        }
+//        searchString = mSearchText2.getText().toString();
+//        locations.add(geoLocate(searchString));
+//        searchString = mSearchText3.getText().toString();
+//        locations.add(geoLocate(searchString));
+//        searchString = mSearchText4.getText().toString();
+//        locations.add(geoLocate(searchString));
         return locations;
     }
 
@@ -360,6 +341,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         return null;
     }
 
+    @Override
+    public void onDestinationEditTextClick(String destination) {
+        geoLocateAndMoveCamera(destination);
+    }
 }
 
 

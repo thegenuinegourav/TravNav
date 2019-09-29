@@ -30,4 +30,8 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
     //Google play services
     implementation 'com.google.android.gms:play-services:11.4.0'
+    //noinspection GradleCompatible
+    implementation 'com.android.support:recyclerview-v7:23.0.1'
+    //noinspection GradleCompatible
+    implementation 'com.android.support:cardview-v7:23.0.1'
 }
