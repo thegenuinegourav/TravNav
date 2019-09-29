@@ -61,6 +61,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private Boolean mLocationPermissionsGranted = false;
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
+    private Location currentLocation;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -140,7 +141,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         if(task.isSuccessful() && task.getResult()!=null){
                             Log.d(TAG, "onComplete: found location!");
                             Location currentLocation = (Location) task.getResult();
-
+                            setCurrentLocation(currentLocation);
                             mSearchText.setText("Use Current Location");
                             moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()),
                                     DEFAULT_ZOOM,
@@ -156,6 +157,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }catch (SecurityException e){
             Log.e(TAG, "getDeviceLocation: SecurityException: " + e.getMessage() );
         }
+    }
+
+    public void setCurrentLocation(Location location) {
+        currentLocation = new Location(location);
     }
 
     private void moveCamera(LatLng latLng, float zoom, String title){
@@ -180,8 +185,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         || keyEvent.getAction() == KeyEvent.ACTION_DOWN
                         || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER){
 
-                    //execute our method for searching
-                    geoLocate(mSearchText);
+
+                    if (!mSearchText.getText().toString().equals("Use Current Location")) {
+                        //execute our method for searching
+                        geoLocate(mSearchText);
+                    }
+
                     return true;
                 }
 
@@ -322,7 +331,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         ArrayList<Location> locations = new ArrayList<>();
         String searchString = mSearchText.getText().toString();
         if (searchString.equals("Use Current Location")) {
-
+            locations.add(currentLocation);
         }else {
             locations.add(geoLocate(searchString));
         }

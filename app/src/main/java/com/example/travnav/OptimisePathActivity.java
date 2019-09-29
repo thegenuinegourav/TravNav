@@ -1,13 +1,19 @@
 package com.example.travnav;
 
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 public class OptimisePathActivity extends AppCompatActivity {
 
@@ -32,8 +38,45 @@ public class OptimisePathActivity extends AppCompatActivity {
         buildGraph();
         float dist = findOptimisedPath(0);
         Log.d(TAG, "Optimised Dist : " + dist + " Path : " + optimisePath.toString());
+
+        List<String> optimiseLocationsNames = getLocationNamesFromOptimisePath();
         TextView textView = (TextView) findViewById(R.id.textVw);
-        textView.setText(optimisePath[0] + " "+ optimisePath[1] + " " + optimisePath[2]);
+        String tv = optimisePath[0] + " "+ optimisePath[1] + " " + optimisePath[2] + "\n";
+        tv = tv + optimiseLocationsNames.toString();
+        textView.setText(tv);
+    }
+
+    public List<String> getLocationNamesFromOptimisePath() {
+        List<String> optimiseLocationsNames = new ArrayList<>();
+        for (int i=0;i<optimisePath.length;i++) {
+            Location location = locations.get(optimisePath[i]);
+            optimiseLocationsNames.add(getAddress(location.getLatitude(), location.getLongitude()));
+        }
+        return optimiseLocationsNames;
+    }
+
+    public String getAddress(double lat, double lng) {
+        Geocoder geocoder = new Geocoder(OptimisePathActivity.this, Locale.getDefault());
+        try {
+            List<Address> addresses = geocoder.getFromLocation(lat, lng, 1);
+            Address obj = addresses.get(0);
+            String add = obj.getAddressLine(0);
+//            add = add + "\n" + obj.getCountryName();
+//            add = add + "\n" + obj.getCountryCode();
+//            add = add + "\n" + obj.getAdminArea();
+//            add = add + "\n" + obj.getPostalCode();
+//            add = add + "\n" + obj.getSubAdminArea();
+//            add = add + "\n" + obj.getLocality();
+//            add = add + "\n" + obj.getSubThoroughfare();
+            add = add + "\n\n\n";
+            Log.v("IGA", "Address" + add);
+            return add;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+        return "Can't find address ";
     }
 
     public void buildGraph() {
@@ -47,7 +90,7 @@ public class OptimisePathActivity extends AppCompatActivity {
         Log.d(TAG, "Graph : " + graph.toString());
     }
 
-    float findOptimisedPath(int s)
+    float findOptimisedPath(int source)
     {
         int vertexSize = size-1;
         // store all vertex apart from source vertex
@@ -66,7 +109,7 @@ public class OptimisePathActivity extends AppCompatActivity {
             float current_pathweight = 0;
 
             // compute current path weight
-            int k = s;
+            int k = source;
             for (int i = 0; i < vertexSize; i++) {
                 current_pathweight += graph[k][vertex[i]];
                 k = vertex[i];
@@ -86,6 +129,7 @@ public class OptimisePathActivity extends AppCompatActivity {
     }
 
 
+    //--------------------------------- Find Next Permutation -------------------------------------
 
     // Function to swap the data
     // present in the left and right indices
