@@ -2,6 +2,7 @@ package com.example.travnav;
 
 import android.*;
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -9,11 +10,16 @@ import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,7 +60,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     //widgets
     private EditText mSearchText;
     private ImageView mGps;
+    private ImageView deleteImage;
 
+    private RelativeLayout relativeLayout;
+    private LinearLayout parentLayout;
+    private ScrollView scrollView;
     //vars
     private Boolean mLocationPermissionsGranted = false;
     private GoogleMap mMap;
@@ -67,6 +77,20 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mSearchText = (EditText) findViewById(R.id.input_search);
         mGps = (ImageView) findViewById(R.id.ic_gps);
 
+        deleteImage = findViewById(R.id.delete_button);
+
+        relativeLayout = findViewById(R.id.relLayout1);
+        parentLayout = findViewById(R.id.parentLayout);
+        scrollView = findViewById(R.id.scrollView);
+
+//        deleteImage.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                parentLayout.removeView((View) v.getParent());
+//            }
+//        });
+
+        getSupportActionBar().hide();
         getLocationPermission();
     }
 
@@ -117,6 +141,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
 
             init();
+
+            // TODO : create method to adjust the textviews and layout.
+           // adjustLayout();
         }
     }
 
@@ -177,6 +204,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                     //execute our method for searching
                     geoLocate();
+                    adjustLayout();
                     return true;
                 }
 
@@ -188,11 +216,23 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             @Override
             public void onClick(View view) {
                 Log.d(TAG, "onClick: clicked gps icon");
+                adjustLayout();
                 getDeviceLocation();
+
             }
         });
 
         hideSoftKeyboard();
+    }
+
+    private void adjustLayout(){
+        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        final View rowView = inflater.inflate(R.layout.field, null);
+        // Add the new row before the add field button.
+        scrollView.addView(rowView, scrollView.getChildCount() - 1);
+
+        // delete
+       // parentRelativeLayout.removeView((View) rowView.getParent());
     }
 
     private void geoLocate(){
@@ -247,6 +287,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
 
+//    private void onDelete(View v){
+//        parentLayout.removeView((View) v.getParent());
+//    }
 }
 
 
