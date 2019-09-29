@@ -2,10 +2,12 @@ package com.example.travnav;
 
 import android.*;
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -52,7 +54,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private static final float DEFAULT_ZOOM = 15f;
 
     //widgets
-    private EditText mSearchText;
+    private EditText mSearchText, mSearchText2, mSearchText3, mSearchText4;
     private ImageView mGps;
 
     //vars
@@ -65,6 +67,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
         mSearchText = (EditText) findViewById(R.id.input_search);
+        mSearchText2 = (EditText) findViewById(R.id.input_search_2);
+        mSearchText3 = (EditText) findViewById(R.id.input_search_3);
+        mSearchText4 = (EditText) findViewById(R.id.input_search_4);
         mGps = (ImageView) findViewById(R.id.ic_gps);
 
         getLocationPermission();
@@ -176,7 +181,58 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER){
 
                     //execute our method for searching
-                    geoLocate();
+                    geoLocate(mSearchText);
+                    return true;
+                }
+
+                return false;
+            }
+        });
+
+        mSearchText2.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+                if(actionId == EditorInfo.IME_ACTION_SEARCH
+                        || actionId == EditorInfo.IME_ACTION_DONE
+                        || keyEvent.getAction() == KeyEvent.ACTION_DOWN
+                        || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER){
+
+                    //execute our method for searching
+                    geoLocate(mSearchText2);
+                    return true;
+                }
+
+                return false;
+            }
+        });
+
+        mSearchText3.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+                if(actionId == EditorInfo.IME_ACTION_SEARCH
+                        || actionId == EditorInfo.IME_ACTION_DONE
+                        || keyEvent.getAction() == KeyEvent.ACTION_DOWN
+                        || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER){
+
+                    //execute our method for searching
+                    geoLocate(mSearchText3);
+                    return true;
+                }
+
+                return false;
+            }
+        });
+
+        mSearchText4.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+                if(actionId == EditorInfo.IME_ACTION_SEARCH
+                        || actionId == EditorInfo.IME_ACTION_DONE
+                        || keyEvent.getAction() == KeyEvent.ACTION_DOWN
+                        || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER){
+
+                    //execute our method for searching
+                    geoLocate(mSearchText4);
                     return true;
                 }
 
@@ -195,7 +251,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         hideSoftKeyboard();
     }
 
-    private void geoLocate(){
+    private void geoLocate(EditText mSearchText){
         Log.d(TAG, "geoLocate: geolocating");
 
         String searchString = mSearchText.getText().toString();
@@ -245,6 +301,54 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void hideSoftKeyboard(){
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+    }
+
+    public Location convertToLocation(Address address) {
+        Location location = new Location(LocationManager.GPS_PROVIDER);
+        location.setLatitude(address.getLatitude());
+        location.setLongitude(address.getLongitude());
+        return location;
+    }
+
+    public void OptimisePath(View view) {
+        ArrayList<Location> locations =getLocationsFromEditTexts();
+
+        Intent intent = new Intent(MapActivity.this, OptimisePathActivity.class);
+        intent.putParcelableArrayListExtra("LOCATIONS", locations);
+        startActivity(intent);
+    }
+
+    public ArrayList<Location> getLocationsFromEditTexts() {
+        ArrayList<Location> locations = new ArrayList<>();
+        String searchString = mSearchText.getText().toString();
+        if (searchString.equals("Use Current Location")) {
+
+        }else {
+            locations.add(geoLocate(searchString));
+        }
+        searchString = mSearchText2.getText().toString();
+        locations.add(geoLocate(searchString));
+        searchString = mSearchText3.getText().toString();
+        locations.add(geoLocate(searchString));
+        searchString = mSearchText4.getText().toString();
+        locations.add(geoLocate(searchString));
+        return locations;
+    }
+
+    private Location geoLocate(String searchString){
+        Geocoder geocoder = new Geocoder(MapActivity.this);
+        List<Address> list = new ArrayList<>();
+        try{
+            list = geocoder.getFromLocationName(searchString, 1);
+        }catch (IOException e){
+            Log.e(TAG, "geoLocate: IOException: " + e.getMessage() );
+        }
+
+        if(list.size() > 0){
+            Address address = list.get(0);
+            return convertToLocation(address);
+        }
+        return null;
     }
 
 }

@@ -5,7 +5,7 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="200dp"
         android:layout_marginTop="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginLeft="10dp"
@@ -15,8 +15,7 @@
 
         <EditText
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_centerVertical="true"
+            android:layout_height="50dp"
             android:textSize="15sp"
             android:textColor="#000"
             android:padding="10dp"
@@ -30,12 +29,53 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
             android:layout_marginRight="10dp"
             android:layout_marginTop="10dp"
             android:scaleType="centerCrop"
             android:id="@+id/ic_gps"
             android:src="@drawable/ic_gps"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_centerVertical="true"
+            android:textSize="15sp"
+            android:textColor="#000"
+            android:padding="10dp"
+            android:id="@+id/input_search_2"
+            android:background="@null"
+            android:hint="Enter Destination"
+            android:layout_below="@id/input_search"
+            android:imeOptions="actionSearch"
+            android:inputType="text"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_centerVertical="true"
+            android:textSize="15sp"
+            android:textColor="#000"
+            android:padding="10dp"
+            android:id="@+id/input_search_3"
+            android:background="@null"
+            android:hint="Enter Destination"
+            android:layout_below="@id/input_search_2"
+            android:imeOptions="actionSearch"
+            android:inputType="text"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_centerVertical="true"
+            android:textSize="15sp"
+            android:textColor="#000"
+            android:padding="10dp"
+            android:id="@+id/input_search_4"
+            android:background="@null"
+            android:hint="Enter Destination"
+            android:layout_below="@id/input_search_3"
+            android:imeOptions="actionSearch"
+            android:inputType="text"/>
 
 
     </RelativeLayout>
@@ -47,6 +87,15 @@
         android:id="@+id/map"
         tools:context=".MapsActivity"
         android:name="com.google.android.gms.maps.SupportMapFragment" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:padding="10dp"
+        android:text="Go"
+        android:onClick="OptimisePath"
+        android:layout_alignParentBottom="true"
+        />
 
 </RelativeLayout>
 
