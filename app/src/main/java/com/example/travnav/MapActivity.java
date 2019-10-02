@@ -77,6 +77,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private Location currentLocation;
     private int destinationPosition = 0;
+    private List<String> destinations;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -219,6 +220,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         });
 
+        destinations = new ArrayList<>();
         final List<Integer> destinationsListCounts = new ArrayList<>();
 
         // Define a layout for RecyclerView
@@ -327,18 +329,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     //TODO fix this method
     public ArrayList<Location> getLocationsFromEditTexts() {
         ArrayList<Location> locations = new ArrayList<>();
-//        String searchString = sourceEditText.getText().toString();
-//        if (searchString.equals("Use Current Location")) {
-//            locations.add(currentLocation);
-//        }else {
-//            locations.add(geoLocate(searchString));
-//        }
-//        searchString = mSearchText2.getText().toString();
-//        locations.add(geoLocate(searchString));
-//        searchString = mSearchText3.getText().toString();
-//        locations.add(geoLocate(searchString));
-//        searchString = mSearchText4.getText().toString();
-//        locations.add(geoLocate(searchString));
+        String source = sourceEditText.getText().toString();
+        if (source.equals("Use Current Location")) {
+            locations.add(currentLocation);
+        }else {
+            locations.add(geoLocate(source));
+        }
+        for (String destination: destinations) {
+            locations.add(geoLocate(destination));
+        }
         return locations;
     }
 
@@ -359,12 +358,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void onDestinationEditTextClick(String destination) {
+    public void addDestination(String destination) {
+        destinations.add(destination);
         geoLocateAndMoveCamera(destination);
     }
 
     @Override
-    public void updateDestinationPosition() {
+    public void deleteDestination(String destination) {
+        if (!destination.trim().contains("")) destinations.remove(destination);
         destinationPosition--;
     }
 }

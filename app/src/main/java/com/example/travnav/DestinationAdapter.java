@@ -14,8 +14,6 @@ import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.travnav.utils.Constant;
-
 import java.util.List;
 
 import static com.example.travnav.utils.Constant.DESTINATION_COUNT_HEIGHT_BANDWIDTH;
@@ -80,7 +78,7 @@ public class DestinationAdapter extends RecyclerView.Adapter<DestinationAdapter.
                         if (destination.trim().equalsIgnoreCase("")) {
                             holder.destinationEditText.setError("Destination can not be blank");
                         }else {
-                            destinationAdapterToMapActivityCallback.onDestinationEditTextClick(destination);
+                            destinationAdapterToMapActivityCallback.addDestination(destination);
                         }
                         return true;
                 }
@@ -97,8 +95,8 @@ public class DestinationAdapter extends RecyclerView.Adapter<DestinationAdapter.
 
                 // Remove the item on remove/button click
                 mDataSet.remove(position);
+                destinationAdapterToMapActivityCallback.deleteDestination(holder.destinationEditText.getText().toString());
                 holder.destinationEditText.getText().clear();
-                destinationAdapterToMapActivityCallback.updateDestinationPosition();
 
                 notifyItemRemoved(position);
 
