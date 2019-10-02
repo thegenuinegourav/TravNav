@@ -1,7 +1,7 @@
 package com.example.travnav;
 
-import android.*;
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
@@ -15,10 +15,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,11 +45,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.travnav.utils.Constant.DESTINATION_COUNT_HEIGHT_BANDWIDTH;
+import static com.example.travnav.utils.Constant.DESTINATION_LIST_HEIGHT;
+
 /**
  * Created by User on 10/2/2017.
  */
 
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, OnDestinationEditTextClickListener {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, DestinationAdapterToMapActivityCallback {
 
     private static final String TAG = "MapActivity";
 
@@ -205,8 +208,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 destinationsListCounts.add(destinationPosition);
                 mAdapter.notifyItemInserted(destinationPosition);
                 destinationsRcyclrVw.scrollToPosition(destinationPosition);
-                // Show the added item label
-                //Toast.makeText(MapActivity.this, "Added Destination View with position : " + destinationPosition, Toast.LENGTH_SHORT).show();
+
+                changeHeightOfRecyclerView();
                 destinationPosition++;
             }
         });
@@ -238,11 +241,20 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 getDeviceLocation();
             }
         });
+    }
 
-        hideSoftKeyboard();
+    public void changeHeightOfRecyclerView() {
+        ViewGroup.LayoutParams params=destinationsRcyclrVw.getLayoutParams();
+        if (destinationPosition > DESTINATION_COUNT_HEIGHT_BANDWIDTH) {
+            params.height=DESTINATION_LIST_HEIGHT;
+        }else {
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+        }
+        destinationsRcyclrVw.setLayoutParams(params);
     }
 
     private void geoLocateAndMoveCamera(String searchString){
+        hideSoftKeyboard();
         Log.d(TAG, "geoLocate: geolocating");
 
         Geocoder geocoder = new Geocoder(MapActivity.this);
@@ -257,7 +269,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             Address address = list.get(0);
 
             Log.d(TAG, "geoLocate: found a location: " + address.toString());
-            //Toast.makeText(this, address.toString(), Toast.LENGTH_SHORT).show();
 
             moveCamera(new LatLng(address.getLatitude(), address.getLongitude()), DEFAULT_ZOOM,
                     address.getAddressLine(0));
@@ -289,7 +300,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void hideSoftKeyboard(){
-        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        // Check if no view has focus:
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
     public Location convertToLocation(Address address) {
@@ -344,6 +360,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onDestinationEditTextClick(String destination) {
         geoLocateAndMoveCamera(destination);
+    }
+
+    @Override
+    public void updateDestinationPosition() {
+        destinationPosition--;
     }
 }
 
