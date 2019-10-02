@@ -14,19 +14,25 @@ import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
+import com.example.travnav.utils.Constant;
+
 import java.util.List;
+
+import static com.example.travnav.utils.Constant.DESTINATION_COUNT_HEIGHT_BANDWIDTH;
+import static com.example.travnav.utils.Constant.DESTINATION_LIST_HEIGHT;
 
 public class DestinationAdapter extends RecyclerView.Adapter<DestinationAdapter.ViewHolder> {
     private List<Integer> mDataSet;
     private Context mContext;
-    private OnDestinationEditTextClickListener onDestinationEditTextClickListener;
+    private DestinationAdapterToMapActivityCallback destinationAdapterToMapActivityCallback;
+    private int listSize=0;
+    private RecyclerView mRecyclerView;
 
     public DestinationAdapter(Context context, List<Integer> destinationsListCounts){
         mContext = context;
         mDataSet = destinationsListCounts;
         // TODO check this
-        onDestinationEditTextClickListener = (OnDestinationEditTextClickListener) context;
+        destinationAdapterToMapActivityCallback = (DestinationAdapterToMapActivityCallback) context;
 
     }
 
@@ -46,7 +52,14 @@ public class DestinationAdapter extends RecyclerView.Adapter<DestinationAdapter.
     public DestinationAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType){
         // Create a new View
         View v = LayoutInflater.from(mContext).inflate(R.layout.custom_view,parent,false);
+        listSize++;
         return new ViewHolder(v);
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        mRecyclerView = recyclerView;
     }
 
 
@@ -64,7 +77,7 @@ public class DestinationAdapter extends RecyclerView.Adapter<DestinationAdapter.
                         || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER){
 
                         String destination = holder.destinationEditText.getText().toString();
-                        onDestinationEditTextClickListener.onDestinationEditTextClick(destination);
+                        destinationAdapterToMapActivityCallback.onDestinationEditTextClick(destination);
 
                         return true;
                 }
@@ -82,10 +95,14 @@ public class DestinationAdapter extends RecyclerView.Adapter<DestinationAdapter.
 
                 // Remove the item on remove/button click
                 mDataSet.remove(position);
+                holder.destinationEditText.getText().clear();
+                destinationAdapterToMapActivityCallback.updateDestinationPosition();
 
                 notifyItemRemoved(position);
 
                 notifyItemRangeChanged(position,mDataSet.size());
+
+                changeHeightOfRecyclerView();
 
                 // Show the removed item label
                 Toast.makeText(mContext,"Removed : " + itemLabel,Toast.LENGTH_SHORT).show();
@@ -96,5 +113,15 @@ public class DestinationAdapter extends RecyclerView.Adapter<DestinationAdapter.
     @Override
     public int getItemCount(){
         return mDataSet.size();
+    }
+
+    public void changeHeightOfRecyclerView() {
+        ViewGroup.LayoutParams params=mRecyclerView.getLayoutParams();
+        if (mDataSet.size()-1 > DESTINATION_COUNT_HEIGHT_BANDWIDTH) {
+            params.height=DESTINATION_LIST_HEIGHT;
+        }else {
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+        }
+        mRecyclerView.setLayoutParams(params);
     }
 }
