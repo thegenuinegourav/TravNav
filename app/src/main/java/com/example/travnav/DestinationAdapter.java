@@ -77,11 +77,13 @@ public class DestinationAdapter extends RecyclerView.Adapter<DestinationAdapter.
                         || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER){
 
                         String destination = holder.destinationEditText.getText().toString();
-                        destinationAdapterToMapActivityCallback.onDestinationEditTextClick(destination);
-
+                        if (destination.trim().equalsIgnoreCase("")) {
+                            holder.destinationEditText.setError("Destination can not be blank");
+                        }else {
+                            destinationAdapterToMapActivityCallback.onDestinationEditTextClick(destination);
+                        }
                         return true;
                 }
-
                 return false;
             }
         });

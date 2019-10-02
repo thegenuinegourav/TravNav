@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -189,6 +190,34 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void init(){
         Log.d(TAG, "init: initializing");
+        sourceEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+                if(actionId == EditorInfo.IME_ACTION_SEARCH
+                        || actionId == EditorInfo.IME_ACTION_DONE
+                        || keyEvent.getAction() == KeyEvent.ACTION_DOWN
+                        || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER){
+
+                    String source = sourceEditText.getText().toString();
+                    if (source.trim().equalsIgnoreCase("")) {
+                        sourceEditText.setError("Source can not be blank");
+                    }else if (!source.equals("Use Current Location")) {
+                        //execute our method for searching
+                        geoLocateAndMoveCamera(source);
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        mGps.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d(TAG, "onClick: clicked gps icon");
+                getDeviceLocation();
+            }
+        });
 
         final List<Integer> destinationsListCounts = new ArrayList<>();
 
@@ -211,34 +240,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                 changeHeightOfRecyclerView();
                 destinationPosition++;
-            }
-        });
-
-
-        sourceEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
-                if(actionId == EditorInfo.IME_ACTION_SEARCH
-                        || actionId == EditorInfo.IME_ACTION_DONE
-                        || keyEvent.getAction() == KeyEvent.ACTION_DOWN
-                        || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER){
-
-                    String source = sourceEditText.getText().toString();
-                    if (!source.equals("Use Current Location")) {
-                        //execute our method for searching
-                        geoLocateAndMoveCamera(source);
-                    }
-                    return true;
-                }
-                return false;
-            }
-        });
-
-        mGps.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.d(TAG, "onClick: clicked gps icon");
-                getDeviceLocation();
             }
         });
     }
