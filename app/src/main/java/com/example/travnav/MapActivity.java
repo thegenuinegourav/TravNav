@@ -74,7 +74,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private Location currentLocation;
-    private int destinationPosition = 0;
     private List<String> destinations;
 
     @Override
@@ -219,14 +218,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         });
 
         destinations = new ArrayList<>();
-        final List<Integer> destinationsListCounts = new ArrayList<>();
 
         // Define a layout for RecyclerView
         mLayoutManager = new LinearLayoutManager(this);
         destinationsRcyclrVw.setLayoutManager(mLayoutManager);
 
         // Initialize a new instance of RecyclerView Adapter instance
-        mAdapter = new DestinationAdapter(this, destinationsListCounts);
+        mAdapter = new DestinationAdapter(this, destinations);
 
         // Set the adapter for RecyclerView
         destinationsRcyclrVw.setAdapter(mAdapter);
@@ -234,19 +232,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         addDestinationBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                destinationsListCounts.add(destinationPosition);
-                mAdapter.notifyItemInserted(destinationPosition);
-                destinationsRcyclrVw.scrollToPosition(destinationPosition);
+                destinations.add("Add");
+                int position = destinations.size() - 1;
+                mAdapter.notifyItemInserted(position);
+                destinationsRcyclrVw.scrollToPosition(position);
 
                 changeHeightOfRecyclerView();
-                destinationPosition++;
             }
         });
     }
 
     public void changeHeightOfRecyclerView() {
         ViewGroup.LayoutParams params=destinationsRcyclrVw.getLayoutParams();
-        if (destinationPosition > DESTINATION_COUNT_HEIGHT_BANDWIDTH) {
+        if (destinations.size() - 1 > DESTINATION_COUNT_HEIGHT_BANDWIDTH) {
             params.height=DESTINATION_LIST_HEIGHT;
         }else {
             params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -317,6 +315,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void OptimisePath(View view) {
+
+//        for (int childCount = destinationsRcyclrVw.getChildCount(), i = 0; i < childCount; ++i) {
+//            final RecyclerView.ViewHolder holder = destinationsRcyclrVw.getChildViewHolder(destinationsRcyclrVw.getChildAt(i));
+//
+//        }
+
+
         ArrayList<Location> locations =getLocationsFromEditTexts();
 
         Intent intent = new Intent(MapActivity.this, OptimisePathActivity.class);
@@ -356,6 +361,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @Override
     public void addDestination(String destination) {
+        destinations.remove("Add");
         destinations.add(destination);
         geoLocateAndMoveCamera(destination);
     }
@@ -364,7 +370,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void deleteDestination(String destination) {
         if (!destination.trim().equalsIgnoreCase(""))
             destinations.remove(destination);
-        destinationPosition--;
     }
 }
 
