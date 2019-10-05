@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -14,7 +13,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -326,7 +324,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         startActivity(intent);
     }
 
-    //TODO fix this method
     public ArrayList<Location> getLocationsFromEditTexts() {
         ArrayList<Location> locations = new ArrayList<>();
         String source = sourceEditText.getText().toString();
@@ -365,7 +362,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @Override
     public void deleteDestination(String destination) {
-        if (!destination.trim().contains("")) destinations.remove(destination);
+        if (!destination.trim().equalsIgnoreCase(""))
+            destinations.remove(destination);
         destinationPosition--;
     }
 }
