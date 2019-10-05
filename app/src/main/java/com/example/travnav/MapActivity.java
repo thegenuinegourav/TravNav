@@ -232,14 +232,30 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         addDestinationBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                destinations.add("Add");
-                int position = destinations.size() - 1;
-                mAdapter.notifyItemInserted(position);
-                destinationsRcyclrVw.scrollToPosition(position);
 
-                changeHeightOfRecyclerView();
+                if (!checkValidEditTextInCurrentRecyclerView()) {
+                    Toast.makeText(getApplicationContext(), "Please add above destination first.", Toast.LENGTH_SHORT).show();
+                }else {
+                    destinations.add("Add");
+                    int position = destinations.size() - 1;
+                    mAdapter.notifyItemInserted(position);
+                    destinationsRcyclrVw.scrollToPosition(position);
+
+                    changeHeightOfRecyclerView();
+                }
             }
         });
+    }
+
+    public boolean checkValidEditTextInCurrentRecyclerView() {
+        for (int childCount = destinationsRcyclrVw.getChildCount(), i = 0; i < childCount; ++i) {
+            final RecyclerView.ViewHolder holder = destinationsRcyclrVw.getChildViewHolder(destinationsRcyclrVw.getChildAt(i));
+            EditText destinationEditText = (EditText) holder.itemView.findViewById(R.id.destination_edit_text);
+            if (destinationEditText.getText().toString().trim().equalsIgnoreCase("")) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void changeHeightOfRecyclerView() {
@@ -316,17 +332,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     public void OptimisePath(View view) {
 
-//        for (int childCount = destinationsRcyclrVw.getChildCount(), i = 0; i < childCount; ++i) {
-//            final RecyclerView.ViewHolder holder = destinationsRcyclrVw.getChildViewHolder(destinationsRcyclrVw.getChildAt(i));
-//
-//        }
+        if (!checkValidEditTextInCurrentRecyclerView()) {
+            Toast.makeText(getApplicationContext(), "Please add above destinations first to optimise the path", Toast.LENGTH_SHORT).show();
+        }else {
 
+            ArrayList<Location> locations = getLocationsFromEditTexts();
 
-        ArrayList<Location> locations =getLocationsFromEditTexts();
+            Intent intent = new Intent(MapActivity.this, OptimisePathActivity.class);
+            intent.putParcelableArrayListExtra("LOCATIONS", locations);
+            startActivity(intent);
+        }
 
-        Intent intent = new Intent(MapActivity.this, OptimisePathActivity.class);
-        intent.putParcelableArrayListExtra("LOCATIONS", locations);
-        startActivity(intent);
     }
 
     public ArrayList<Location> getLocationsFromEditTexts() {
