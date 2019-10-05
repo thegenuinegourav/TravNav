@@ -15,9 +15,9 @@
         android:orientation="vertical">
 
         <LinearLayout
+            android:id="@+id/source_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/source_layout"
             android:orientation="horizontal">
 
             <EditText
@@ -47,22 +47,20 @@
             android:id="@+id/recycler_view_destinations"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:scrollbars="vertical"
             android:layout_below="@id/source_layout"
-            />
+            android:scrollbars="vertical" />
 
         <Button
             android:id="@+id/btn_add_destination"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:layout_alignParentRight="true"
             android:layout_below="@id/recycler_view_destinations"
+            android:layout_alignParentRight="true"
             android:background="@android:color/transparent"
-            android:drawableLeft="@drawable/ic_add_button"
             android:drawableStart="@drawable/ic_add_button"
-            android:text="Add Destination"
-            />
+            android:drawableLeft="@drawable/ic_add_button"
+            android:padding="10dp"
+            android:text="Add Destination" />
 
     </RelativeLayout>
 
@@ -75,13 +73,30 @@
         android:layout_height="match_parent"
         tools:context=".MapsActivity" />
 
-    <Button
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_margin="10dp"
-        android:onClick="OptimisePath"
-        android:text="Go" />
+        android:layout_margin="10dp">
+
+        <Button
+            android:id="@+id/btn_check_destinations"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:onClick="CheckDestinations"
+            android:text="Check" />
+
+        <Button
+            android:id="@+id/btn_optimise_path"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:visibility="gone"
+            android:layout_weight="1"
+            android:onClick="OptimisePath"
+            android:text="Go" />
+
+    </LinearLayout>
 
 </RelativeLayout>
 
