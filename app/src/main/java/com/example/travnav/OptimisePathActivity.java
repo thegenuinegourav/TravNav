@@ -19,6 +19,7 @@ public class OptimisePathActivity extends AppCompatActivity {
 
     private static final String TAG = "OptimisePathActivity";
     private ArrayList<Location> locations;
+    private ArrayList<String> destinations;
     private int size;
     private float[][] graph;
     private int[] optimisePath, vertex;
@@ -33,6 +34,7 @@ public class OptimisePathActivity extends AppCompatActivity {
 
     public void init() {
         locations = this.getIntent().getParcelableArrayListExtra("LOCATIONS");
+        destinations = this.getIntent().getStringArrayListExtra("DESTINATIONS");
         Log.d(TAG, "LOCATIONS : " + locations.toString());
         size = locations.size();
         buildGraph();

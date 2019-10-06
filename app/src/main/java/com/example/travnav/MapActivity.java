@@ -344,9 +344,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }else {
 
             ArrayList<Location> locations = getLocationsFromEditTexts();
-
+            ArrayList<String> dests = new ArrayList<>(destinations);
+            dests.add(0,sourceEditText.getText().toString());
             Intent intent = new Intent(MapActivity.this, OptimisePathActivity.class);
             intent.putParcelableArrayListExtra("LOCATIONS", locations);
+            intent.putStringArrayListExtra("DESTINATIONS",dests);
             startActivity(intent);
         }
 
