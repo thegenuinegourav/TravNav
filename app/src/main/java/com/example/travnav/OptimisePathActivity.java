@@ -52,13 +52,8 @@ public class OptimisePathActivity extends AppCompatActivity {
     private final int[][] dotCoords = new int[5][2];
     private final int[] pics = {R.drawable.p1, R.drawable.p2, R.drawable.p3, R.drawable.p4, R.drawable.p5};
     private final int[] maps = {R.drawable.map_paris, R.drawable.map_seoul, R.drawable.map_london, R.drawable.map_beijing, R.drawable.map_greece};
-    private final int[] descriptions = {R.string.text1, R.string.text2, R.string.text3, R.string.text4, R.string.text5};
-    private final String[] countries = {"PARIS", "SEOUL", "LONDON", "BEIJING", "THIRA"};
-    private final String[] places = {"The Louvre", "Gwanghwamun", "Tower Bridge", "Temple of Heaven", "Aegeana Sea"};
-    private final String[] temperatures = {"21°C", "19°C", "17°C", "23°C", "20°C"};
-    private final String[] times = {"Aug 1 - Dec 15    7:00-18:00", "Sep 5 - Nov 10    8:00-16:00", "Mar 8 - May 21    7:00-18:00"};
 
-    private final SliderAdapter sliderAdapter = new SliderAdapter(pics, 20, new OnCardClickListener());
+    private SliderAdapter sliderAdapter;
 
     private CardSliderLayoutManager layoutManger;
     private RecyclerView recyclerView;
@@ -79,11 +74,15 @@ public class OptimisePathActivity extends AppCompatActivity {
     private DecodeBitmapTask decodeMapBitmapTask;
     private DecodeBitmapTask.Listener mapLoadListener;
 
-//    private static final String TAG = "OptimisePathActivity";
-//    private ArrayList<Location> locations;
-//    private int size;
-//    private float[][] graph;
-//    private int[] optimisePath, vertex;
+    private static final String TAG = "OptimisePathActivity";
+    private ArrayList<Location> locations;
+    private String[] positions, destinations;
+    private int size;
+    private float[][] graph;
+    private int[] optimisePath, vertex;
+    private List<Place> placeList;
+
+    private String[] places, descriptions, countries, times;
 
 
     @Override
@@ -91,13 +90,218 @@ public class OptimisePathActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_optimise_path);
 
+        init();
         initRecyclerView();
         initCountryText();
         initSwitchers();
         initGreenDot();
-
-        //init();
     }
+
+    public void init() {
+        locations = this.getIntent().getParcelableArrayListExtra("LOCATIONS");
+        destinations = this.getIntent().getExtras().getStringArray("DESTINATIONS");
+        size = locations.size();
+        initPlaceList();
+        positions = getpositions();
+        Log.d(TAG, "LOCATIONS : " + locations.toString());
+        buildGraph();
+        float dist = findOptimisedPath(0);
+        Log.d(TAG, "Optimised Dist : " + dist + " Path : " + optimisePath.toString());
+        setStringArraysWithOptimisedPath();
+        sliderAdapter = new SliderAdapter(pics, size, new OnCardClickListener());
+    }
+
+    public void initPlaceList() {
+        placeList = new ArrayList<>();
+        for (int i=0; i<locations.size(); i++) {
+            Place place = new Place();
+            place.setPlace(destinations[i]);
+            place.setLocation(locations.get(i));
+            place = initialisePlaceWithAttributes(place,locations.get(i));
+            placeList.add(place);
+        }
+    }
+
+    public Place initialisePlaceWithAttributes(Place place, Location location) {
+        double lat = location.getLatitude();
+        double lng = location.getLongitude();
+        Geocoder geocoder = new Geocoder(OptimisePathActivity.this, Locale.getDefault());
+        try {
+            List<Address> addresses = geocoder.getFromLocation(lat, lng, 1);
+            Address obj = addresses.get(0);
+            String add = obj.getAddressLine(0);
+            place.setAddressLine((obj.getAddressLine(0) != null) ? obj.getAddressLine(0) : "Can't Fetch");
+            place.setAdminArea((obj.getAdminArea() != null) ? obj.getAdminArea() : "Can't Fetch");
+            place.setSubAdminArea((obj.getSubAdminArea() != null) ? obj.getSubAdminArea() : "Can't Fetch");
+            place.setLocality((obj.getLocality() != null) ? obj.getLocality() : "Can't Fetch");
+            return place;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+        return place;
+    }
+
+    public void buildGraph() {
+        graph = new float[size][size];
+        for (int i=0; i<size; i++) {
+            for (int j=0; j<size; j++) {
+                float dist = locations.get(i).distanceTo(locations.get(j));
+                graph[i][j]=dist;
+            }
+        }
+        Log.d(TAG, "Graph : " + graph.toString());
+    }
+
+    float findOptimisedPath(int source)
+    {
+        int vertexSize = size-1;
+        // store all vertex apart from source vertex
+        vertex = new int[vertexSize];
+        optimisePath = new int[vertexSize];
+        for(int i=1;i<size;i++) {
+            vertex[i-1]=i;
+        }
+
+        // store minimum weight Hamiltonian Cycle.
+        float min_path = Float.MAX_VALUE;
+        do {
+
+            Log.d(TAG, "Vertex Array : " + vertex.toString());
+            // store current Path weight(cost)
+            float current_pathweight = 0;
+
+            // compute current path weight
+            int k = source;
+            for (int i = 0; i < vertexSize; i++) {
+                current_pathweight += graph[k][vertex[i]];
+                k = vertex[i];
+            }
+
+            // update minimum
+            if (min_path > current_pathweight) {
+                min_path = current_pathweight;
+                for (int i=0; i<vertexSize; i++)
+                    optimisePath[i] = vertex[i];
+            }
+
+
+        } while (findNextPermutation());
+
+        return min_path;
+    }
+
+    public void setStringArraysWithOptimisedPath() {
+        places = new String[size];
+        descriptions = new String[size];
+        countries = new String[size];
+        times = new String[size];
+
+        initialiseStringArraysWithPlaceAndPos(placeList.get(0), 0);
+        for (int i=0;i<optimisePath.length;i++) {
+            Place place = placeList.get(optimisePath[i]);
+            initialiseStringArraysWithPlaceAndPos(place, i+1);
+        }
+    }
+
+    public void initialiseStringArraysWithPlaceAndPos(Place place, int pos) {
+        places[pos] = place.getPlace();
+        descriptions[pos] = place.getAddressLine();
+        countries[pos] = place.getAdminArea();
+        if (place.getSubAdminArea() != null) {
+            times[pos] = place.getSubAdminArea() + " , ";
+        }
+        times[pos] += place.getLocality();
+    }
+
+    public String[] getpositions() {
+        String[] positions = new String[size];
+        for (int i=0;i<size;i++) {
+            positions[i] = String.valueOf(i+1) + "/" + size;
+        }
+        return positions;
+    }
+
+
+    //--------------------------------- Find Next Permutation -------------------------------------
+
+    // Function to swap the data
+    // present in the left and right indices
+    public int[] swap(int data[], int left, int right) {
+
+        // Swap the data
+        int temp = data[left];
+        data[left] = data[right];
+        data[right] = temp;
+
+        // Return the updated array
+        return data;
+    }
+
+    // Function to reverse the sub-array
+    // starting from left to the right
+    // both inclusive
+    public int[] reverse(int data[], int left, int right) {
+
+        // Reverse the sub-array
+        while (left < right) {
+            int temp = data[left];
+            data[left++] = data[right];
+            data[right--] = temp;
+        }
+
+        // Return the updated array
+        return data;
+    }
+
+    // Function to find the next permutation
+    // of the given integer array
+    public boolean findNextPermutation() {
+
+        // If the given vertexset is empty
+        // or contains only one element
+        // next_permutation is not possible
+        if (vertex.length <= 1)
+            return false;
+
+        int last = vertex.length - 2;
+
+        // find the longest non-increasing suffix
+        // and find the pivot
+        while (last >= 0) {
+            if (vertex[last] < vertex[last + 1]) {
+                break;
+            }
+            last--;
+        }
+
+        // If there is no increasing pair
+        // there is no higher order permutation
+        if (last < 0)
+            return false;
+
+        int nextGreater = vertex.length - 1;
+
+        // Find the rightmost successor to the pivot
+        for (int i = vertex.length - 1; i > last; i--) {
+            if (vertex[i] > vertex[last]) {
+                nextGreater = i;
+                break;
+            }
+        }
+
+        // Swap the successor and the pivot
+        vertex = swap(vertex, nextGreater, last);
+
+        // Reverse the suffix
+        vertex = reverse(vertex, last + 1, vertex.length - 1);
+
+        // Return true as the next_permutation is done
+        return true;
+    }
+
+
 
     private void initRecyclerView() {
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -129,7 +333,7 @@ public class OptimisePathActivity extends AppCompatActivity {
     private void initSwitchers() {
         temperatureSwitcher = (TextSwitcher) findViewById(R.id.ts_temperature);
         temperatureSwitcher.setFactory(new TextViewFactory(R.style.TemperatureTextView, true));
-        temperatureSwitcher.setCurrentText(temperatures[0]);
+        temperatureSwitcher.setCurrentText(positions[0]);
 
         placeSwitcher = (TextSwitcher) findViewById(R.id.ts_place);
         placeSwitcher.setFactory(new TextViewFactory(R.style.PlaceTextView, false));
@@ -143,7 +347,7 @@ public class OptimisePathActivity extends AppCompatActivity {
         descriptionsSwitcher.setInAnimation(this, android.R.anim.fade_in);
         descriptionsSwitcher.setOutAnimation(this, android.R.anim.fade_out);
         descriptionsSwitcher.setFactory(new TextViewFactory(R.style.DescriptionTextView, false));
-        descriptionsSwitcher.setCurrentText(getString(descriptions[0]));
+        descriptionsSwitcher.setCurrentText(descriptions[0]);
 
         mapSwitcher = (ImageSwitcher) findViewById(R.id.ts_map);
         mapSwitcher.setInAnimation(this, R.anim.fade_in);
@@ -262,7 +466,7 @@ public class OptimisePathActivity extends AppCompatActivity {
 
         temperatureSwitcher.setInAnimation(OptimisePathActivity.this, animH[0]);
         temperatureSwitcher.setOutAnimation(OptimisePathActivity.this, animH[1]);
-        temperatureSwitcher.setText(temperatures[pos % temperatures.length]);
+        temperatureSwitcher.setText(positions[pos % positions.length]);
 
         placeSwitcher.setInAnimation(OptimisePathActivity.this, animV[0]);
         placeSwitcher.setOutAnimation(OptimisePathActivity.this, animV[1]);
@@ -272,7 +476,7 @@ public class OptimisePathActivity extends AppCompatActivity {
         clockSwitcher.setOutAnimation(OptimisePathActivity.this, animV[1]);
         clockSwitcher.setText(times[pos % times.length]);
 
-        descriptionsSwitcher.setText(getString(descriptions[pos % descriptions.length]));
+        descriptionsSwitcher.setText(descriptions[pos % size]);
 
         showMap(maps[pos % maps.length]);
 
@@ -362,182 +566,7 @@ public class OptimisePathActivity extends AppCompatActivity {
         }
     }
 
-//    public void init() {
-//        locations = this.getIntent().getParcelableArrayListExtra("LOCATIONS");
-//        Log.d(TAG, "LOCATIONS : " + locations.toString());
-//        size = locations.size();
-//        buildGraph();
-//        float dist = findOptimisedPath(0);
-//        Log.d(TAG, "Optimised Dist : " + dist + " Path : " + optimisePath.toString());
-//
-//        List<String> optimiseLocationsNames = getLocationNamesFromOptimisePath();
-//        TextView textView = (TextView) findViewById(R.id.textVw);
-//        String tv = "";
-//        for(int i=0;i<optimisePath.length;i++) {
-//            tv = tv +  optimisePath[i] + " ";
-//        }
-//        tv += "\n";
-//        tv = tv + optimiseLocationsNames.toString();
-//        textView.setText(tv);
-//    }
-//
-//    public List<String> getLocationNamesFromOptimisePath() {
-//        List<String> optimiseLocationsNames = new ArrayList<>();
-//        for (int i=0;i<optimisePath.length;i++) {
-//            Location location = locations.get(optimisePath[i]);
-//            optimiseLocationsNames.add(getAddress(location.getLatitude(), location.getLongitude()));
-//        }
-//        return optimiseLocationsNames;
-//    }
-//
-//    public String getAddress(double lat, double lng) {
-//        Geocoder geocoder = new Geocoder(OptimisePathActivity.this, Locale.getDefault());
-//        try {
-//            List<Address> addresses = geocoder.getFromLocation(lat, lng, 1);
-//            Address obj = addresses.get(0);
-//            String add = obj.getAddressLine(0);
-////            add = add + "\n" + obj.getCountryName();
-////            add = add + "\n" + obj.getCountryCode();
-////            add = add + "\n" + obj.getAdminArea();
-////            add = add + "\n" + obj.getPostalCode();
-////            add = add + "\n" + obj.getSubAdminArea();
-////            add = add + "\n" + obj.getLocality();
-////            add = add + "\n" + obj.getSubThoroughfare();
-//            add = add + "\n\n\n";
-//            Log.v("IGA", "Address" + add);
-//            return add;
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-//        }
-//        return "Can't find address ";
-//    }
-//
-//    public void buildGraph() {
-//        graph = new float[size][size];
-//        for (int i=0; i<size; i++) {
-//            for (int j=0; j<size; j++) {
-//                float dist = locations.get(i).distanceTo(locations.get(j));
-//                graph[i][j]=dist;
-//            }
-//        }
-//        Log.d(TAG, "Graph : " + graph.toString());
-//    }
-//
-//    float findOptimisedPath(int source)
-//    {
-//        int vertexSize = size-1;
-//        // store all vertex apart from source vertex
-//        vertex = new int[vertexSize];
-//        optimisePath = new int[vertexSize];
-//        for(int i=1;i<size;i++) {
-//            vertex[i-1]=i;
-//        }
-//
-//        // store minimum weight Hamiltonian Cycle.
-//        float min_path = Float.MAX_VALUE;
-//        do {
-//
-//            Log.d(TAG, "Vertex Array : " + vertex.toString());
-//            // store current Path weight(cost)
-//            float current_pathweight = 0;
-//
-//            // compute current path weight
-//            int k = source;
-//            for (int i = 0; i < vertexSize; i++) {
-//                current_pathweight += graph[k][vertex[i]];
-//                k = vertex[i];
-//            }
-//
-//            // update minimum
-//            if (min_path > current_pathweight) {
-//                min_path = current_pathweight;
-//                for (int i=0; i<vertexSize; i++)
-//                    optimisePath[i] = vertex[i];
-//            }
-//
-//
-//        } while (findNextPermutation());
-//
-//        return min_path;
-//    }
-//
-//
-//    //--------------------------------- Find Next Permutation -------------------------------------
-//
-//    // Function to swap the data
-//    // present in the left and right indices
-//    public int[] swap(int data[], int left, int right) {
-//
-//        // Swap the data
-//        int temp = data[left];
-//        data[left] = data[right];
-//        data[right] = temp;
-//
-//        // Return the updated array
-//        return data;
-//    }
-//
-//    // Function to reverse the sub-array
-//    // starting from left to the right
-//    // both inclusive
-//    public int[] reverse(int data[], int left, int right) {
-//
-//        // Reverse the sub-array
-//        while (left < right) {
-//            int temp = data[left];
-//            data[left++] = data[right];
-//            data[right--] = temp;
-//        }
-//
-//        // Return the updated array
-//        return data;
-//    }
-//
-//    // Function to find the next permutation
-//    // of the given integer array
-//    public boolean findNextPermutation() {
-//
-//        // If the given vertexset is empty
-//        // or contains only one element
-//        // next_permutation is not possible
-//        if (vertex.length <= 1)
-//            return false;
-//
-//        int last = vertex.length - 2;
-//
-//        // find the longest non-increasing suffix
-//        // and find the pivot
-//        while (last >= 0) {
-//            if (vertex[last] < vertex[last + 1]) {
-//                break;
-//            }
-//            last--;
-//        }
-//
-//        // If there is no increasing pair
-//        // there is no higher order permutation
-//        if (last < 0)
-//            return false;
-//
-//        int nextGreater = vertex.length - 1;
-//
-//        // Find the rightmost successor to the pivot
-//        for (int i = vertex.length - 1; i > last; i--) {
-//            if (vertex[i] > vertex[last]) {
-//                nextGreater = i;
-//                break;
-//            }
-//        }
-//
-//        // Swap the successor and the pivot
-//        vertex = swap(vertex, nextGreater, last);
-//
-//        // Reverse the suffix
-//        vertex = reverse(vertex, last + 1, vertex.length - 1);
-//
-//        // Return true as the next_permutation is done
-//        return true;
-//    }
+
+
+
 }

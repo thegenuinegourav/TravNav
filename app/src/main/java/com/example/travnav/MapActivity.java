@@ -45,6 +45,7 @@ import com.google.android.gms.tasks.Task;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -344,9 +345,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }else {
 
             ArrayList<Location> locations = getLocationsFromEditTexts();
-
+            ArrayList<String> dests = new ArrayList<>(destinations);
+            String source = sourceEditText.getText().toString();
+            if (source.equals("Use Current Location")) source = "My Location";
+            dests.add(0,source);
             Intent intent = new Intent(MapActivity.this, OptimisePathActivity.class);
             intent.putParcelableArrayListExtra("LOCATIONS", locations);
+            Bundle b=new Bundle();
+            b.putStringArray("DESTINATIONS", dests.toArray(new String[dests.size()]));
+            intent.putExtras(b);
             startActivity(intent);
         }
 
