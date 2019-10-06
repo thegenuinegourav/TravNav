@@ -44,14 +44,23 @@ import android.widget.ViewSwitcher;
 
 import com.example.travnav.cards.SliderAdapter;
 import com.example.travnav.utils.DecodeBitmapTask;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.ramotion.cardslider.CardSliderLayoutManager;
 import com.ramotion.cardslider.CardSnapHelper;
 
-public class OptimisePathActivity extends AppCompatActivity {
+import static com.example.travnav.utils.Constant.DEFAULT_ZOOM;
+
+public class OptimisePathActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private final int[][] dotCoords = new int[5][2];
     private final int[] pics = {R.drawable.p1, R.drawable.p2, R.drawable.p3, R.drawable.p4, R.drawable.p5};
-    private final int[] maps = {R.drawable.map_paris, R.drawable.map_seoul, R.drawable.map_london, R.drawable.map_beijing, R.drawable.map_greece};
+    //private final int[] maps = {R.drawable.map_paris, R.drawable.map_seoul, R.drawable.map_london, R.drawable.map_beijing, R.drawable.map_greece};
 
     private SliderAdapter sliderAdapter;
 
@@ -83,6 +92,8 @@ public class OptimisePathActivity extends AppCompatActivity {
     private List<Place> placeList;
 
     private String[] places, descriptions, countries, times;
+    private Location[] maps;
+    private GoogleMap mMap;
 
 
     @Override
@@ -92,9 +103,9 @@ public class OptimisePathActivity extends AppCompatActivity {
 
         init();
         initRecyclerView();
+        initMap();
         initCountryText();
         initSwitchers();
-        initGreenDot();
     }
 
     public void init() {
@@ -197,6 +208,7 @@ public class OptimisePathActivity extends AppCompatActivity {
         descriptions = new String[size];
         countries = new String[size];
         times = new String[size];
+        maps = new Location[size];
 
         initialiseStringArraysWithPlaceAndPos(placeList.get(0), 0);
         for (int i=0;i<optimisePath.length;i++) {
@@ -209,10 +221,14 @@ public class OptimisePathActivity extends AppCompatActivity {
         places[pos] = place.getPlace();
         descriptions[pos] = place.getAddressLine();
         countries[pos] = place.getAdminArea();
-        if (place.getSubAdminArea() != null) {
+        maps[pos] = place.getLocation();
+        if (!place.getSubAdminArea().equals("Can't Fetch")) {
             times[pos] = place.getSubAdminArea() + " , ";
+            times[pos] += place.getLocality();
+        }else {
+            times[pos] = place.getLocality();
         }
-        times[pos] += place.getLocality();
+
     }
 
     public String[] getpositions() {
@@ -301,6 +317,28 @@ public class OptimisePathActivity extends AppCompatActivity {
         return true;
     }
 
+    private void initMap(){
+        Log.d(TAG, "initMap: initializing map");
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.ts_map);
+        mapFragment.getMapAsync(OptimisePathActivity.this);
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        moveCamera(placeList.get(0).getLocation(),
+                DEFAULT_ZOOM,
+                "My Location");
+    }
+
+    private void moveCamera(Location location, float zoom, String title){
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+        MarkerOptions options = new MarkerOptions()
+                .position(latLng)
+                .title(title);
+        mMap.addMarker(options);
+    }
 
 
     private void initRecyclerView() {
@@ -349,19 +387,19 @@ public class OptimisePathActivity extends AppCompatActivity {
         descriptionsSwitcher.setFactory(new TextViewFactory(R.style.DescriptionTextView, false));
         descriptionsSwitcher.setCurrentText(descriptions[0]);
 
-        mapSwitcher = (ImageSwitcher) findViewById(R.id.ts_map);
-        mapSwitcher.setInAnimation(this, R.anim.fade_in);
-        mapSwitcher.setOutAnimation(this, R.anim.fade_out);
-        mapSwitcher.setFactory(new ImageViewFactory());
-        mapSwitcher.setImageResource(maps[0]);
+//        mapSwitcher = (ImageSwitcher) findViewById(R.id.ts_map);
+//        mapSwitcher.setInAnimation(this, R.anim.fade_in);
+//        mapSwitcher.setOutAnimation(this, R.anim.fade_out);
+//        mapSwitcher.setFactory(new ImageViewFactory());
+//        mapSwitcher.setImageResource(maps[0]);
 
-        mapLoadListener = new DecodeBitmapTask.Listener() {
-            @Override
-            public void onPostExecuted(Bitmap bitmap) {
-                ((ImageView)mapSwitcher.getNextView()).setImageBitmap(bitmap);
-                mapSwitcher.showNext();
-            }
-        };
+//        mapLoadListener = new DecodeBitmapTask.Listener() {
+//            @Override
+//            public void onPostExecuted(Bitmap bitmap) {
+//                ((ImageView)mapSwitcher.getNextView()).setImageBitmap(bitmap);
+//                mapSwitcher.showNext();
+//            }
+//        };
     }
 
     private void initCountryText() {
@@ -380,32 +418,32 @@ public class OptimisePathActivity extends AppCompatActivity {
         country2TextView.setTypeface(Typeface.createFromAsset(getAssets(), "open-sans-extrabold.ttf"));
     }
 
-    private void initGreenDot() {
-        mapSwitcher.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                mapSwitcher.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-
-                final int viewLeft = mapSwitcher.getLeft();
-                final int viewTop = mapSwitcher.getTop() + mapSwitcher.getHeight() / 3;
-
-                final int border = 100;
-                final int xRange = Math.max(1, mapSwitcher.getWidth() - border * 2);
-                final int yRange = Math.max(1, (mapSwitcher.getHeight() / 3) * 2 - border * 2);
-
-                final Random rnd = new Random();
-
-                for (int i = 0, cnt = dotCoords.length; i < cnt; i++) {
-                    dotCoords[i][0] = viewLeft + border + rnd.nextInt(xRange);
-                    dotCoords[i][1] = viewTop + border + rnd.nextInt(yRange);
-                }
-
-                greenDot = findViewById(R.id.green_dot);
-                greenDot.setX(dotCoords[0][0]);
-                greenDot.setY(dotCoords[0][1]);
-            }
-        });
-    }
+//    private void initGreenDot() {
+//        mapSwitcher.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+//            @Override
+//            public void onGlobalLayout() {
+//                mapSwitcher.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+//
+//                final int viewLeft = mapSwitcher.getLeft();
+//                final int viewTop = mapSwitcher.getTop() + mapSwitcher.getHeight() / 3;
+//
+//                final int border = 100;
+//                final int xRange = Math.max(1, mapSwitcher.getWidth() - border * 2);
+//                final int yRange = Math.max(1, (mapSwitcher.getHeight() / 3) * 2 - border * 2);
+//
+//                final Random rnd = new Random();
+//
+//                for (int i = 0, cnt = dotCoords.length; i < cnt; i++) {
+//                    dotCoords[i][0] = viewLeft + border + rnd.nextInt(xRange);
+//                    dotCoords[i][1] = viewTop + border + rnd.nextInt(yRange);
+//                }
+//
+//                greenDot = findViewById(R.id.green_dot);
+//                greenDot.setX(dotCoords[0][0]);
+//                greenDot.setY(dotCoords[0][1]);
+//            }
+//        });
+//    }
 
     private void setCountryText(String text, boolean left2right) {
         final TextView invisibleText;
@@ -478,7 +516,8 @@ public class OptimisePathActivity extends AppCompatActivity {
 
         descriptionsSwitcher.setText(descriptions[pos % size]);
 
-        showMap(maps[pos % maps.length]);
+        //showMap(maps[pos % maps.length]);
+        moveCamera(maps[pos % size], DEFAULT_ZOOM, places[pos % places.length]);
 
         ViewCompat.animate(greenDot)
                 .translationX(dotCoords[pos % dotCoords.length][0])
@@ -488,17 +527,18 @@ public class OptimisePathActivity extends AppCompatActivity {
         currentPosition = pos;
     }
 
-    private void showMap(@DrawableRes int resId) {
-        if (decodeMapBitmapTask != null) {
-            decodeMapBitmapTask.cancel(true);
-        }
+//    private void showMap(@DrawableRes int resId) {
+//        if (decodeMapBitmapTask != null) {
+//            decodeMapBitmapTask.cancel(true);
+//        }
+//
+//        final int w = mapSwitcher.getWidth();
+//        final int h = mapSwitcher.getHeight();
+//
+//        decodeMapBitmapTask = new DecodeBitmapTask(getResources(), resId, w, h, mapLoadListener);
+//        decodeMapBitmapTask.execute();
+//    }
 
-        final int w = mapSwitcher.getWidth();
-        final int h = mapSwitcher.getHeight();
-
-        decodeMapBitmapTask = new DecodeBitmapTask(getResources(), resId, w, h, mapLoadListener);
-        decodeMapBitmapTask.execute();
-    }
 
     private class TextViewFactory implements  ViewSwitcher.ViewFactory {
 
