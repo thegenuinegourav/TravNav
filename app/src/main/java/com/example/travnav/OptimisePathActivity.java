@@ -41,7 +41,11 @@ public class OptimisePathActivity extends AppCompatActivity {
 
         List<String> optimiseLocationsNames = getLocationNamesFromOptimisePath();
         TextView textView = (TextView) findViewById(R.id.textVw);
-        String tv = optimisePath[0] + " "+ optimisePath[1] + " " + optimisePath[2] + "\n";
+        String tv = "";
+        for(int i=0;i<optimisePath.length;i++) {
+            tv = tv +  optimisePath[i] + " ";
+        }
+        tv += "\n";
         tv = tv + optimiseLocationsNames.toString();
         textView.setText(tv);
     }

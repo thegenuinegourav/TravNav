@@ -13,7 +13,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -32,18 +31,23 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.example.travnav.utils.Constant.DESTINATION_COUNT_HEIGHT_BANDWIDTH;
 import static com.example.travnav.utils.Constant.DESTINATION_LIST_HEIGHT;
@@ -64,7 +68,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     //widgets
     private EditText sourceEditText;
     private ImageView mGps;
-    private Button addDestinationBtn;
+    private Button addDestinationBtn, optimisePathBtn;
     private RecyclerView destinationsRcyclrVw;
 
     private RecyclerView.Adapter mAdapter;
@@ -75,7 +79,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private Location currentLocation;
-    private int destinationPosition = 0;
+    private List<String> destinations;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -84,6 +89,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         sourceEditText = (EditText) findViewById(R.id.source);
         mGps = (ImageView) findViewById(R.id.ic_gps);
         addDestinationBtn = (Button) findViewById(R.id.btn_add_destination);
+        optimisePathBtn = (Button) findViewById(R.id.btn_optimise_path);
         destinationsRcyclrVw = (RecyclerView) findViewById(R.id.recycler_view_destinations);
 
         getLocationPermission();
@@ -180,41 +186,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         Log.d(TAG, "moveCamera: moving the camera to: lat: " + latLng.latitude + ", lng: " + latLng.longitude );
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
 
+
         MarkerOptions options = new MarkerOptions()
                 .position(latLng)
                 .title(title);
-        mMap.addMarker(options);
+        Marker marker = mMap.addMarker(options);
         hideSoftKeyboard();
     }
 
     private void init(){
         Log.d(TAG, "init: initializing");
-
-        final List<Integer> destinationsListCounts = new ArrayList<>();
-
-        // Define a layout for RecyclerView
-        mLayoutManager = new LinearLayoutManager(this);
-        destinationsRcyclrVw.setLayoutManager(mLayoutManager);
-
-        // Initialize a new instance of RecyclerView Adapter instance
-        mAdapter = new DestinationAdapter(this, destinationsListCounts);
-
-        // Set the adapter for RecyclerView
-        destinationsRcyclrVw.setAdapter(mAdapter);
-
-        addDestinationBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                destinationsListCounts.add(destinationPosition);
-                mAdapter.notifyItemInserted(destinationPosition);
-                destinationsRcyclrVw.scrollToPosition(destinationPosition);
-
-                changeHeightOfRecyclerView();
-                destinationPosition++;
-            }
-        });
-
-
         sourceEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
@@ -224,7 +205,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER){
 
                     String source = sourceEditText.getText().toString();
-                    if (!source.equals("Use Current Location")) {
+                    if (source.trim().equalsIgnoreCase("")) {
+                        sourceEditText.setError("Source can not be blank");
+                    }else if (!source.equals("Use Current Location")) {
                         //execute our method for searching
                         geoLocateAndMoveCamera(source);
                     }
@@ -241,11 +224,51 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 getDeviceLocation();
             }
         });
+
+        destinations = new ArrayList<>();
+
+        // Define a layout for RecyclerView
+        mLayoutManager = new LinearLayoutManager(this);
+        destinationsRcyclrVw.setLayoutManager(mLayoutManager);
+
+        // Initialize a new instance of RecyclerView Adapter instance
+        mAdapter = new DestinationAdapter(this, destinations);
+
+        // Set the adapter for RecyclerView
+        destinationsRcyclrVw.setAdapter(mAdapter);
+
+        addDestinationBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (!checkValidEditTextInCurrentRecyclerView()) {
+                    Toast.makeText(getApplicationContext(), "Please add above destination first.", Toast.LENGTH_SHORT).show();
+                }else {
+                    destinations.add("Add");
+                    int position = destinations.size() - 1;
+                    mAdapter.notifyItemInserted(position);
+                    destinationsRcyclrVw.scrollToPosition(position);
+
+                    changeHeightOfRecyclerView();
+                }
+            }
+        });
+    }
+
+    public boolean checkValidEditTextInCurrentRecyclerView() {
+        for (int childCount = destinationsRcyclrVw.getChildCount(), i = 0; i < childCount; ++i) {
+            final RecyclerView.ViewHolder holder = destinationsRcyclrVw.getChildViewHolder(destinationsRcyclrVw.getChildAt(i));
+            EditText destinationEditText = (EditText) holder.itemView.findViewById(R.id.destination_edit_text);
+            if (destinationEditText.getText().toString().trim().equalsIgnoreCase("")) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void changeHeightOfRecyclerView() {
         ViewGroup.LayoutParams params=destinationsRcyclrVw.getLayoutParams();
-        if (destinationPosition > DESTINATION_COUNT_HEIGHT_BANDWIDTH) {
+        if (destinations.size() - 1 > DESTINATION_COUNT_HEIGHT_BANDWIDTH) {
             params.height=DESTINATION_LIST_HEIGHT;
         }else {
             params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -255,20 +278,20 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void geoLocateAndMoveCamera(String searchString){
         hideSoftKeyboard();
-        Log.d(TAG, "geoLocate: geolocating");
+        Log.d(TAG, "getLocationFromText: geolocating");
 
         Geocoder geocoder = new Geocoder(MapActivity.this);
         List<Address> list = new ArrayList<>();
         try{
             list = geocoder.getFromLocationName(searchString, 1);
         }catch (IOException e){
-            Log.e(TAG, "geoLocate: IOException: " + e.getMessage() );
+            Log.e(TAG, "getLocationFromText: IOException: " + e.getMessage() );
         }
 
         if(list.size() > 0){
             Address address = list.get(0);
 
-            Log.d(TAG, "geoLocate: found a location: " + address.toString());
+            Log.d(TAG, "getLocationFromText: found a location: " + address.toString());
 
             moveCamera(new LatLng(address.getLatitude(), address.getLongitude()), DEFAULT_ZOOM,
                     address.getAddressLine(0));
@@ -316,38 +339,40 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void OptimisePath(View view) {
-        ArrayList<Location> locations =getLocationsFromEditTexts();
+        if (!checkValidEditTextInCurrentRecyclerView()) {
+            Toast.makeText(getApplicationContext(), "Please add above destinations first to optimise the path", Toast.LENGTH_SHORT).show();
+        }else {
 
-        Intent intent = new Intent(MapActivity.this, OptimisePathActivity.class);
-        intent.putParcelableArrayListExtra("LOCATIONS", locations);
-        startActivity(intent);
+            ArrayList<Location> locations = getLocationsFromEditTexts();
+
+            Intent intent = new Intent(MapActivity.this, OptimisePathActivity.class);
+            intent.putParcelableArrayListExtra("LOCATIONS", locations);
+            startActivity(intent);
+        }
+
     }
 
-    //TODO fix this method
     public ArrayList<Location> getLocationsFromEditTexts() {
         ArrayList<Location> locations = new ArrayList<>();
-//        String searchString = sourceEditText.getText().toString();
-//        if (searchString.equals("Use Current Location")) {
-//            locations.add(currentLocation);
-//        }else {
-//            locations.add(geoLocate(searchString));
-//        }
-//        searchString = mSearchText2.getText().toString();
-//        locations.add(geoLocate(searchString));
-//        searchString = mSearchText3.getText().toString();
-//        locations.add(geoLocate(searchString));
-//        searchString = mSearchText4.getText().toString();
-//        locations.add(geoLocate(searchString));
+        String source = sourceEditText.getText().toString();
+        if (source.equals("Use Current Location")) {
+            locations.add(currentLocation);
+        }else {
+            locations.add(getLocationFromText(source));
+        }
+        for (String destination: destinations) {
+            locations.add(getLocationFromText(destination));
+        }
         return locations;
     }
 
-    private Location geoLocate(String searchString){
+    private Location getLocationFromText(String searchString){
         Geocoder geocoder = new Geocoder(MapActivity.this);
         List<Address> list = new ArrayList<>();
         try{
             list = geocoder.getFromLocationName(searchString, 1);
         }catch (IOException e){
-            Log.e(TAG, "geoLocate: IOException: " + e.getMessage() );
+            Log.e(TAG, "getLocationFromText: IOException: " + e.getMessage() );
         }
 
         if(list.size() > 0){
@@ -358,13 +383,49 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void onDestinationEditTextClick(String destination) {
+    public void addDestination(String destination) {
+        destinations.remove("Add");
+        destinations.add(destination);
         geoLocateAndMoveCamera(destination);
     }
 
     @Override
-    public void updateDestinationPosition() {
-        destinationPosition--;
+    public void deleteDestination(String destination) {
+        if (!destination.trim().equalsIgnoreCase("")) {
+            destinations.remove(destination);
+            showAllMarkers();
+        }
+    }
+
+    public void showAllMarkers() {
+        mMap.clear();
+        List<Marker> markers = new ArrayList<>();
+        List<Location> locations = getLocationsFromEditTexts();
+        for (Location location: locations) {
+            MarkerOptions options = new MarkerOptions()
+                    .position(new LatLng(location.getLatitude(),location.getLongitude()));
+            markers.add(mMap.addMarker(options));
+        }
+
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (Marker marker : markers) {
+            builder.include(marker.getPosition());
+        }
+
+        LatLngBounds bounds = builder.build();
+
+        int padding = 100; // offset from edges of the map in pixels
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+        mMap.animateCamera(cu);
+    }
+
+    public void CheckDestinations(View view) {
+        if (!checkValidEditTextInCurrentRecyclerView()) {
+            Toast.makeText(getApplicationContext(), "Please add above destinations first to optimise the path", Toast.LENGTH_SHORT).show();
+        }else {
+            showAllMarkers();
+            optimisePathBtn.setVisibility(View.VISIBLE);
+        }
     }
 }
 

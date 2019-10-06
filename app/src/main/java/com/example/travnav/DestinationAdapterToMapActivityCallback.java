@@ -1,6 +1,6 @@
 package com.example.travnav;
 
 public interface DestinationAdapterToMapActivityCallback {
-    void onDestinationEditTextClick(String destination);
-    void updateDestinationPosition();
+    void addDestination(String destination);
+    void deleteDestination(String destination);
 }

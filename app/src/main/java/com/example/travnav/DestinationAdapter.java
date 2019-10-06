@@ -14,23 +14,20 @@ import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.travnav.utils.Constant;
-
 import java.util.List;
 
 import static com.example.travnav.utils.Constant.DESTINATION_COUNT_HEIGHT_BANDWIDTH;
 import static com.example.travnav.utils.Constant.DESTINATION_LIST_HEIGHT;
 
 public class DestinationAdapter extends RecyclerView.Adapter<DestinationAdapter.ViewHolder> {
-    private List<Integer> mDataSet;
+    private List<String> destinations;
     private Context mContext;
     private DestinationAdapterToMapActivityCallback destinationAdapterToMapActivityCallback;
-    private int listSize=0;
     private RecyclerView mRecyclerView;
 
-    public DestinationAdapter(Context context, List<Integer> destinationsListCounts){
+    public DestinationAdapter(Context context, List<String> destinations){
         mContext = context;
-        mDataSet = destinationsListCounts;
+        this.destinations = destinations;
         // TODO check this
         destinationAdapterToMapActivityCallback = (DestinationAdapterToMapActivityCallback) context;
 
@@ -52,7 +49,6 @@ public class DestinationAdapter extends RecyclerView.Adapter<DestinationAdapter.
     public DestinationAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType){
         // Create a new View
         View v = LayoutInflater.from(mContext).inflate(R.layout.custom_view,parent,false);
-        listSize++;
         return new ViewHolder(v);
     }
 
@@ -77,11 +73,13 @@ public class DestinationAdapter extends RecyclerView.Adapter<DestinationAdapter.
                         || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER){
 
                         String destination = holder.destinationEditText.getText().toString();
-                        destinationAdapterToMapActivityCallback.onDestinationEditTextClick(destination);
-
+                        if (destination.trim().equalsIgnoreCase("")) {
+                            holder.destinationEditText.setError("Destination can not be blank");
+                        }else {
+                            destinationAdapterToMapActivityCallback.addDestination(destination);
+                        }
                         return true;
                 }
-
                 return false;
             }
         });
@@ -91,16 +89,15 @@ public class DestinationAdapter extends RecyclerView.Adapter<DestinationAdapter.
             @Override
             public void onClick(View view) {
                 // Get the clicked item label
-                Integer itemLabel = mDataSet.get(position);
+                int position = holder.getAdapterPosition();
+                String itemLabel = destinations.get(position);
 
                 // Remove the item on remove/button click
-                mDataSet.remove(position);
+                destinations.remove(position);
+                destinationAdapterToMapActivityCallback.deleteDestination(holder.destinationEditText.getText().toString());
                 holder.destinationEditText.getText().clear();
-                destinationAdapterToMapActivityCallback.updateDestinationPosition();
 
                 notifyItemRemoved(position);
-
-                notifyItemRangeChanged(position,mDataSet.size());
 
                 changeHeightOfRecyclerView();
 
@@ -112,12 +109,12 @@ public class DestinationAdapter extends RecyclerView.Adapter<DestinationAdapter.
 
     @Override
     public int getItemCount(){
-        return mDataSet.size();
+        return destinations.size();
     }
 
     public void changeHeightOfRecyclerView() {
         ViewGroup.LayoutParams params=mRecyclerView.getLayoutParams();
-        if (mDataSet.size()-1 > DESTINATION_COUNT_HEIGHT_BANDWIDTH) {
+        if (destinations.size()-1 > DESTINATION_COUNT_HEIGHT_BANDWIDTH) {
             params.height=DESTINATION_LIST_HEIGHT;
         }else {
             params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
