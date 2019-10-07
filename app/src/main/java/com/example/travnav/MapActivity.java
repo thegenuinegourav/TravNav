@@ -29,6 +29,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.travnav.utils.Constant;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
@@ -45,10 +46,12 @@ import com.google.android.gms.tasks.Task;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.example.travnav.utils.Constant.DEFAULT_ZOOM;
 import static com.example.travnav.utils.Constant.DESTINATION_COUNT_HEIGHT_BANDWIDTH;
 import static com.example.travnav.utils.Constant.DESTINATION_LIST_HEIGHT;
 
@@ -63,7 +66,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
     private static final String COURSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
-    private static final float DEFAULT_ZOOM = 15f;
 
     //widgets
     private EditText sourceEditText;
@@ -184,13 +186,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void moveCamera(LatLng latLng, float zoom, String title){
         Log.d(TAG, "moveCamera: moving the camera to: lat: " + latLng.latitude + ", lng: " + latLng.longitude );
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
 
 
         MarkerOptions options = new MarkerOptions()
                 .position(latLng)
                 .title(title);
-        Marker marker = mMap.addMarker(options);
+        mMap.addMarker(options);
         hideSoftKeyboard();
     }
 
@@ -345,10 +347,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
             ArrayList<Location> locations = getLocationsFromEditTexts();
             ArrayList<String> dests = new ArrayList<>(destinations);
-            dests.add(0,sourceEditText.getText().toString());
+            String source = sourceEditText.getText().toString();
+            if (source.equals("Use Current Location")) source = "My Location";
+            dests.add(0,source);
             Intent intent = new Intent(MapActivity.this, OptimisePathActivity.class);
             intent.putParcelableArrayListExtra("LOCATIONS", locations);
-            intent.putStringArrayListExtra("DESTINATIONS",dests);
+            Bundle b=new Bundle();
+            b.putStringArray("DESTINATIONS", dests.toArray(new String[dests.size()]));
+            intent.putExtras(b);
             startActivity(intent);
         }
 
