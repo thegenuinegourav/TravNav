@@ -143,6 +143,19 @@
 
         </FrameLayout>
 
+        <ImageView
+            android:id="@+id/ic_navigate"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:padding="15dp"
+            android:onClick="Navigate"
+            android:layout_gravity="center"
+            android:src="@drawable/navigate" />
+
     </RelativeLayout>
+
+
 
 </LinearLayout>

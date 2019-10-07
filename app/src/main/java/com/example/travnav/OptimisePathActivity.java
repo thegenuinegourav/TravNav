@@ -1,8 +1,10 @@
 package com.example.travnav;
 
+import android.content.ActivityNotFoundException;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
@@ -607,6 +609,29 @@ public class OptimisePathActivity extends AppCompatActivity implements OnMapRead
     }
 
 
+    public void Navigate(View view) {
+        String url = "https://www.google.com/maps/dir/?api=1&origin=" + maps[0].getLatitude() + "," + maps[0].getLongitude();
+        url += "&destination=" + maps[size-1].getLatitude() + "," + maps[size-1].getLongitude();
+        url += "&waypoints=";
+        int i;
+        for (i=1;i<size-2;i++) {
+            url += maps[i].getLatitude() + "," + maps[i].getLongitude() + "|";
+        }
+        url += maps[i].getLatitude() + "," + maps[i].getLongitude();
+        Uri gmmIntentUri = Uri.parse(url);
+        Intent intent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+        intent.setPackage("com.google.android.apps.maps");
+        try {
+            startActivity(intent);
+        } catch (ActivityNotFoundException ex) {
+            try {
+                Intent unrestrictedIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                startActivity(unrestrictedIntent);
+            } catch (ActivityNotFoundException innerEx) {
+                Toast.makeText(this, "Please install a maps application", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 
 
 }
