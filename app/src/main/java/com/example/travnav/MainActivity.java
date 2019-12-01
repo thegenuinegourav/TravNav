@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void init(){
         try {
-            sleep(2000);
+            sleep(3000);
             // to make the thread sleep for some time (in milliseconds).
             // Here we used this delay time as the time to display the splash screen activity.
             // After this delay time, MapActivity is started by the code written in finally{} block.
