@@ -71,4 +71,8 @@ If you'd like to request a new functionality, feel free to do so by opening an i
   
 ### ScreenShots  
 <img src="screenshots/one.png" width="400"> <img src="screenshots/two.png" width="400">
+<img src="screenshots/three.png" width="400"> <img src="screenshots/four.png" width="400">
+<img src="screenshots/five.png" width="400"> <img src="screenshots/six.png" width="400">
+<img src="screenshots/seven.png" width="400"> <img src="screenshots/eight.png" width="400">
+<img src="screenshots/nine.png" width="400"> 
 
