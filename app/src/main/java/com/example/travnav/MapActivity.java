@@ -1,6 +1,7 @@
 package com.example.travnav;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -29,7 +30,6 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.travnav.utils.Constant;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
@@ -46,10 +46,7 @@ import com.google.android.gms.tasks.Task;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.example.travnav.utils.Constant.DEFAULT_ZOOM;
 import static com.example.travnav.utils.Constant.DESTINATION_COUNT_HEIGHT_BANDWIDTH;
@@ -83,11 +80,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private Location currentLocation;
     private List<String> destinations;
 
+    ProgressDialog progress;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+
+        progress = new ProgressDialog(this);
+        progress.setTitle("Loading");
+        progress.setMessage("Wait while loading...");
+        progress.setCancelable(false);
+
         sourceEditText = (EditText) findViewById(R.id.source);
         mGps = (ImageView) findViewById(R.id.ic_gps);
         addDestinationBtn = (Button) findViewById(R.id.btn_add_destination);
@@ -95,6 +100,36 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         destinationsRcyclrVw = (RecyclerView) findViewById(R.id.recycler_view_destinations);
 
         getLocationPermission();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (destinations != null && mAdapter != null && destinationsRcyclrVw!=null) {
+            int size = destinations.size();
+            destinations.clear();
+            mAdapter.notifyDataSetChanged();
+            ViewGroup.LayoutParams params=destinationsRcyclrVw.getLayoutParams();
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            destinationsRcyclrVw.setLayoutParams(params);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (progress!=null) progress.dismiss();
+
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     private void getLocationPermission(){
@@ -243,9 +278,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             @Override
             public void onClick(View v) {
 
-                if (!checkValidEditTextInCurrentRecyclerView()) {
-                    Toast.makeText(getApplicationContext(), "Please add above destination first.", Toast.LENGTH_SHORT).show();
-                }else {
+                if (checkValidEditTextInCurrentRecyclerView()) {
                     destinations.add("Add");
                     int position = destinations.size() - 1;
                     mAdapter.notifyItemInserted(position);
@@ -261,7 +294,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         for (int childCount = destinationsRcyclrVw.getChildCount(), i = 0; i < childCount; ++i) {
             final RecyclerView.ViewHolder holder = destinationsRcyclrVw.getChildViewHolder(destinationsRcyclrVw.getChildAt(i));
             EditText destinationEditText = (EditText) holder.itemView.findViewById(R.id.destination_edit_text);
-            if (destinationEditText.getText().toString().trim().equalsIgnoreCase("")) {
+            String d = destinationEditText.getText().toString().trim();
+            if (d.equalsIgnoreCase("")) {
+                Toast.makeText(getApplicationContext(), "Please add valid destination.", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+            if (destinations.contains("Add")) {
+                Toast.makeText(getApplicationContext(), "Please search your destination from keypad.", Toast.LENGTH_SHORT).show();
                 return false;
             }
         }
@@ -341,10 +380,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void OptimisePath(View view) {
-        if (!checkValidEditTextInCurrentRecyclerView()) {
-            Toast.makeText(getApplicationContext(), "Please add above destinations first to optimise the path", Toast.LENGTH_SHORT).show();
-        }else {
-
+        if (checkValidEditTextInCurrentRecyclerView()) {
             ArrayList<Location> locations = getLocationsFromEditTexts();
             ArrayList<String> dests = new ArrayList<>(destinations);
             String source = sourceEditText.getText().toString();
@@ -363,7 +399,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public ArrayList<Location> getLocationsFromEditTexts() {
         ArrayList<Location> locations = new ArrayList<>();
         String source = sourceEditText.getText().toString();
-        if (source.equals("Use Current Location")) {
+        if (source.equals("Use Current Location") || source.trim().equalsIgnoreCase("")) {
+            sourceEditText.setText("Use Current Location");
             locations.add(currentLocation);
         }else {
             locations.add(getLocationFromText(source));
@@ -428,14 +465,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void CheckDestinations(View view) {
-        if (!checkValidEditTextInCurrentRecyclerView()) {
-            Toast.makeText(getApplicationContext(), "Please add above destinations first to optimise the path", Toast.LENGTH_SHORT).show();
-        }else {
-            showAllMarkers();
-            optimisePathBtn.setVisibility(View.VISIBLE);
-        }
+        progress.show();
+
+        showAllMarkers();
+        optimisePathBtn.setVisibility(View.VISIBLE);
+
+        progress.dismiss();
     }
 }
+
 
 
 
