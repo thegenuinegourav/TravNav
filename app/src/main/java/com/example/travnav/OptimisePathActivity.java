@@ -1,48 +1,31 @@
 package com.example.travnav;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.graphics.Typeface;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
-import android.os.Bundle;
-import android.util.Log;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.appcompat.app.AppCompatActivity;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Random;
-
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
-import android.app.ActivityOptions;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
-
-import androidx.annotation.DrawableRes;
-import androidx.annotation.StyleRes;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
-import androidx.core.view.ViewCompat;
-import androidx.recyclerview.widget.RecyclerView;
-
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
-import android.view.ViewTreeObserver;
 import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ViewSwitcher;
+
+import androidx.annotation.StyleRes;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.travnav.cards.SliderAdapter;
 import com.example.travnav.utils.DecodeBitmapTask;
@@ -51,10 +34,14 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.ramotion.cardslider.CardSliderLayoutManager;
 import com.ramotion.cardslider.CardSnapHelper;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import static com.example.travnav.utils.Constant.DEFAULT_ZOOM;
 
@@ -62,7 +49,6 @@ public class OptimisePathActivity extends AppCompatActivity implements OnMapRead
 
     private final int[][] dotCoords = new int[5][2];
     private final int[] pics = {R.drawable.p1, R.drawable.p2, R.drawable.p3, R.drawable.p4, R.drawable.p5};
-    //private final int[] maps = {R.drawable.map_paris, R.drawable.map_seoul, R.drawable.map_london, R.drawable.map_beijing, R.drawable.map_greece};
 
     private SliderAdapter sliderAdapter;
 
@@ -388,20 +374,6 @@ public class OptimisePathActivity extends AppCompatActivity implements OnMapRead
         descriptionsSwitcher.setOutAnimation(this, android.R.anim.fade_out);
         descriptionsSwitcher.setFactory(new TextViewFactory(R.style.DescriptionTextView, false));
         descriptionsSwitcher.setCurrentText(descriptions[0]);
-
-//        mapSwitcher = (ImageSwitcher) findViewById(R.id.ts_map);
-//        mapSwitcher.setInAnimation(this, R.anim.fade_in);
-//        mapSwitcher.setOutAnimation(this, R.anim.fade_out);
-//        mapSwitcher.setFactory(new ImageViewFactory());
-//        mapSwitcher.setImageResource(maps[0]);
-
-//        mapLoadListener = new DecodeBitmapTask.Listener() {
-//            @Override
-//            public void onPostExecuted(Bitmap bitmap) {
-//                ((ImageView)mapSwitcher.getNextView()).setImageBitmap(bitmap);
-//                mapSwitcher.showNext();
-//            }
-//        };
     }
 
     private void initCountryText() {
@@ -419,33 +391,6 @@ public class OptimisePathActivity extends AppCompatActivity implements OnMapRead
         country1TextView.setTypeface(Typeface.createFromAsset(getAssets(), "open-sans-extrabold.ttf"));
         country2TextView.setTypeface(Typeface.createFromAsset(getAssets(), "open-sans-extrabold.ttf"));
     }
-
-//    private void initGreenDot() {
-//        mapSwitcher.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-//            @Override
-//            public void onGlobalLayout() {
-//                mapSwitcher.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-//
-//                final int viewLeft = mapSwitcher.getLeft();
-//                final int viewTop = mapSwitcher.getTop() + mapSwitcher.getHeight() / 3;
-//
-//                final int border = 100;
-//                final int xRange = Math.max(1, mapSwitcher.getWidth() - border * 2);
-//                final int yRange = Math.max(1, (mapSwitcher.getHeight() / 3) * 2 - border * 2);
-//
-//                final Random rnd = new Random();
-//
-//                for (int i = 0, cnt = dotCoords.length; i < cnt; i++) {
-//                    dotCoords[i][0] = viewLeft + border + rnd.nextInt(xRange);
-//                    dotCoords[i][1] = viewTop + border + rnd.nextInt(yRange);
-//                }
-//
-//                greenDot = findViewById(R.id.green_dot);
-//                greenDot.setX(dotCoords[0][0]);
-//                greenDot.setY(dotCoords[0][1]);
-//            }
-//        });
-//    }
 
     private void setCountryText(String text, boolean left2right) {
         final TextView invisibleText;
@@ -528,19 +473,6 @@ public class OptimisePathActivity extends AppCompatActivity implements OnMapRead
 
         currentPosition = pos;
     }
-
-//    private void showMap(@DrawableRes int resId) {
-//        if (decodeMapBitmapTask != null) {
-//            decodeMapBitmapTask.cancel(true);
-//        }
-//
-//        final int w = mapSwitcher.getWidth();
-//        final int h = mapSwitcher.getHeight();
-//
-//        decodeMapBitmapTask = new DecodeBitmapTask(getResources(), resId, w, h, mapLoadListener);
-//        decodeMapBitmapTask.execute();
-//    }
-
 
     private class TextViewFactory implements  ViewSwitcher.ViewFactory {
 
