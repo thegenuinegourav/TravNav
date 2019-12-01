@@ -11,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
+import static java.lang.Thread.sleep;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
@@ -22,14 +24,38 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if(isServicesOK()){
-            init();
-        }
+        Thread timerThread= new Thread()
+        {
+            public void run()
+            {
+                    if(isServicesOK()){
+                        init();
+                    }
+            }
+        };
+        timerThread.start();//to start the thread
+
+
     }
 
     private void init(){
-        Intent intent = new Intent(MainActivity.this, MapActivity.class);
-        startActivity(intent);
+        try {
+            sleep(2000);
+            // to make the thread sleep for some time (in milliseconds).
+            // Here we used this delay time as the time to display the splash screen activity.
+            // After this delay time, MapActivity is started by the code written in finally{} block.
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        finally {
+            Intent intent = new Intent(MainActivity.this, MapActivity.class);
+            startActivity(intent);
+
+            // finifh this activity
+            finish();
+        }
+
     }
 
     public boolean isServicesOK(){
