@@ -1,7 +1,6 @@
 package com.example.travnav;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -80,18 +79,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private Location currentLocation;
     private List<String> destinations;
 
-    ProgressDialog progress;
-
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
-
-        progress = new ProgressDialog(this);
-        progress.setTitle("Loading");
-        progress.setMessage("Wait while loading...");
-        progress.setCancelable(false);
 
         sourceEditText = (EditText) findViewById(R.id.source);
         mGps = (ImageView) findViewById(R.id.ic_gps);
@@ -114,14 +106,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             destinationsRcyclrVw.setLayoutParams(params);
         }
     }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (progress!=null) progress.dismiss();
-
-    }
-
 
     @Override
     public void onBackPressed() {
@@ -465,12 +449,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void CheckDestinations(View view) {
-        progress.show();
-
         showAllMarkers();
         optimisePathBtn.setVisibility(View.VISIBLE);
-
-        progress.dismiss();
     }
 }
 

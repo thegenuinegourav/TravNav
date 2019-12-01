@@ -2,7 +2,6 @@ package com.example.travnav;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Typeface;
@@ -50,7 +49,6 @@ public class OptimisePathActivity extends AppCompatActivity implements OnMapRead
 
     private final int[][] dotCoords = new int[5][2];
     private final int[] pics = {R.drawable.p1, R.drawable.p2, R.drawable.p3, R.drawable.p4, R.drawable.p5};
-    //private final int[] maps = {R.drawable.map_paris, R.drawable.map_seoul, R.drawable.map_london, R.drawable.map_beijing, R.drawable.map_greece};
 
     private SliderAdapter sliderAdapter;
 
@@ -91,19 +89,11 @@ public class OptimisePathActivity extends AppCompatActivity implements OnMapRead
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_optimise_path);
 
-        ProgressDialog progress = new ProgressDialog(this);
-        progress.setTitle("Loading");
-        progress.setMessage("Wait while loading...");
-        progress.setCancelable(false);
-        progress.show();
-
         init();
         initRecyclerView();
         initMap();
         initCountryText();
         initSwitchers();
-
-        progress.dismiss();
     }
 
     public void init() {
@@ -384,20 +374,6 @@ public class OptimisePathActivity extends AppCompatActivity implements OnMapRead
         descriptionsSwitcher.setOutAnimation(this, android.R.anim.fade_out);
         descriptionsSwitcher.setFactory(new TextViewFactory(R.style.DescriptionTextView, false));
         descriptionsSwitcher.setCurrentText(descriptions[0]);
-
-//        mapSwitcher = (ImageSwitcher) findViewById(R.id.ts_map);
-//        mapSwitcher.setInAnimation(this, R.anim.fade_in);
-//        mapSwitcher.setOutAnimation(this, R.anim.fade_out);
-//        mapSwitcher.setFactory(new ImageViewFactory());
-//        mapSwitcher.setImageResource(maps[0]);
-
-//        mapLoadListener = new DecodeBitmapTask.Listener() {
-//            @Override
-//            public void onPostExecuted(Bitmap bitmap) {
-//                ((ImageView)mapSwitcher.getNextView()).setImageBitmap(bitmap);
-//                mapSwitcher.showNext();
-//            }
-//        };
     }
 
     private void initCountryText() {
@@ -415,33 +391,6 @@ public class OptimisePathActivity extends AppCompatActivity implements OnMapRead
         country1TextView.setTypeface(Typeface.createFromAsset(getAssets(), "open-sans-extrabold.ttf"));
         country2TextView.setTypeface(Typeface.createFromAsset(getAssets(), "open-sans-extrabold.ttf"));
     }
-
-//    private void initGreenDot() {
-//        mapSwitcher.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-//            @Override
-//            public void onGlobalLayout() {
-//                mapSwitcher.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-//
-//                final int viewLeft = mapSwitcher.getLeft();
-//                final int viewTop = mapSwitcher.getTop() + mapSwitcher.getHeight() / 3;
-//
-//                final int border = 100;
-//                final int xRange = Math.max(1, mapSwitcher.getWidth() - border * 2);
-//                final int yRange = Math.max(1, (mapSwitcher.getHeight() / 3) * 2 - border * 2);
-//
-//                final Random rnd = new Random();
-//
-//                for (int i = 0, cnt = dotCoords.length; i < cnt; i++) {
-//                    dotCoords[i][0] = viewLeft + border + rnd.nextInt(xRange);
-//                    dotCoords[i][1] = viewTop + border + rnd.nextInt(yRange);
-//                }
-//
-//                greenDot = findViewById(R.id.green_dot);
-//                greenDot.setX(dotCoords[0][0]);
-//                greenDot.setY(dotCoords[0][1]);
-//            }
-//        });
-//    }
 
     private void setCountryText(String text, boolean left2right) {
         final TextView invisibleText;
@@ -524,19 +473,6 @@ public class OptimisePathActivity extends AppCompatActivity implements OnMapRead
 
         currentPosition = pos;
     }
-
-//    private void showMap(@DrawableRes int resId) {
-//        if (decodeMapBitmapTask != null) {
-//            decodeMapBitmapTask.cancel(true);
-//        }
-//
-//        final int w = mapSwitcher.getWidth();
-//        final int h = mapSwitcher.getHeight();
-//
-//        decodeMapBitmapTask = new DecodeBitmapTask(getResources(), resId, w, h, mapLoadListener);
-//        decodeMapBitmapTask.execute();
-//    }
-
 
     private class TextViewFactory implements  ViewSwitcher.ViewFactory {
 
