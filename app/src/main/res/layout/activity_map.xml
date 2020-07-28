@@ -85,6 +85,9 @@
             android:layout_height="50dp"
             android:layout_weight="1"
             android:onClick="CheckDestinations"
+            android:background="@android:color/white"
+            android:textColor="#1779b2"
+            android:fontFamily="@font/montserrat_medium"
             android:text="Check" />
 
         <Button
@@ -94,7 +97,10 @@
             android:visibility="gone"
             android:layout_weight="1"
             android:onClick="OptimisePath"
-            android:text="Go" />
+            android:text="Go"
+            android:background="#1779b2"
+            android:textColor="@android:color/white"
+            android:fontFamily="@font/montserrat_medium" />
 
     </LinearLayout>
 
