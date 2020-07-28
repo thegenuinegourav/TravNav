@@ -1,4 +1,4 @@
-package com.example.travnav;
+package thegenuinegourav.travnav;
 
 import android.content.Context;
 import android.view.KeyEvent;
@@ -16,8 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-import static com.example.travnav.utils.Constant.DESTINATION_COUNT_HEIGHT_BANDWIDTH;
-import static com.example.travnav.utils.Constant.DESTINATION_LIST_HEIGHT;
+import static thegenuinegourav.travnav.utils.Constant.DESTINATION_COUNT_HEIGHT_BANDWIDTH;
+import static thegenuinegourav.travnav.utils.Constant.DESTINATION_LIST_HEIGHT;
 
 public class DestinationAdapter extends RecyclerView.Adapter<DestinationAdapter.ViewHolder> {
     private List<String> destinations;

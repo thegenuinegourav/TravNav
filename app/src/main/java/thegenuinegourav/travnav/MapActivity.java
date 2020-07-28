@@ -1,4 +1,4 @@
-package com.example.travnav;
+package thegenuinegourav.travnav;
 
 import android.Manifest;
 import android.content.Context;
@@ -47,9 +47,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.travnav.utils.Constant.DEFAULT_ZOOM;
-import static com.example.travnav.utils.Constant.DESTINATION_COUNT_HEIGHT_BANDWIDTH;
-import static com.example.travnav.utils.Constant.DESTINATION_LIST_HEIGHT;
+import static thegenuinegourav.travnav.utils.Constant.DEFAULT_ZOOM;
+import static thegenuinegourav.travnav.utils.Constant.DESTINATION_COUNT_HEIGHT_BANDWIDTH;
+import static thegenuinegourav.travnav.utils.Constant.DESTINATION_LIST_HEIGHT;
 
 /**
  * Created by User on 10/2/2017.

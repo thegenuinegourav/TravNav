@@ -1,4 +1,4 @@
-package com.example.travnav;
+package thegenuinegourav.travnav;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
@@ -27,8 +27,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.travnav.cards.SliderAdapter;
-import com.example.travnav.utils.DecodeBitmapTask;
+import thegenuinegourav.travnav.cards.SliderAdapter;
+import thegenuinegourav.travnav.utils.DecodeBitmapTask;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static com.example.travnav.utils.Constant.DEFAULT_ZOOM;
+import static thegenuinegourav.travnav.utils.Constant.DEFAULT_ZOOM;
 
 public class OptimisePathActivity extends AppCompatActivity implements OnMapReadyCallback {
 

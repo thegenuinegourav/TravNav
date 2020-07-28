@@ -1,11 +1,11 @@
-package com.example.travnav.cards;
+package thegenuinegourav.travnav.cards;
 
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.travnav.R;
+import thegenuinegourav.travnav.R;
 
 import androidx.recyclerview.widget.RecyclerView;
 

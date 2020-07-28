@@ -1,4 +1,4 @@
-package com.example.travnav;
+package thegenuinegourav.travnav;
 
 import android.location.Location;
 

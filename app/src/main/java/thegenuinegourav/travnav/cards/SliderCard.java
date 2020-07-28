@@ -1,12 +1,12 @@
-package com.example.travnav.cards;
+package thegenuinegourav.travnav.cards;
 
 import android.graphics.Bitmap;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
-import com.example.travnav.R;
-import com.example.travnav.utils.DecodeBitmapTask;
+import thegenuinegourav.travnav.R;
+import thegenuinegourav.travnav.utils.DecodeBitmapTask;
 
 
 import androidx.annotation.DrawableRes;

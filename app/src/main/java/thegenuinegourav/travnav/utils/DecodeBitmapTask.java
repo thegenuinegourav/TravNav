@@ -1,4 +1,4 @@
-package com.example.travnav.utils;
+package thegenuinegourav.travnav.utils;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -12,7 +12,7 @@ import android.graphics.RectF;
 import android.os.AsyncTask;
 import android.os.Build;
 
-import com.example.travnav.R;
+import thegenuinegourav.travnav.R;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;

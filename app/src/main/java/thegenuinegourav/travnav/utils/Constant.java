@@ -1,4 +1,4 @@
-package com.example.travnav.utils;
+package thegenuinegourav.travnav.utils;
 
 public class Constant {
     public static final int DESTINATION_LIST_HEIGHT = 310;

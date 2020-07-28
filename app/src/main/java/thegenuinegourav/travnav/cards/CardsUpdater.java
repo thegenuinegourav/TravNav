@@ -1,4 +1,4 @@
-package com.example.travnav.cards;
+package thegenuinegourav.travnav.cards;
 
 import android.os.Build;
 

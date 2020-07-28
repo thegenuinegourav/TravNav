@@ -1,4 +1,4 @@
-package com.example.travnav;
+package thegenuinegourav.travnav;
 
 public interface DestinationAdapterToMapActivityCallback {
     void addDestination(String destination);

@@ -1,4 +1,4 @@
-package com.example.travnav.utils;
+package thegenuinegourav.travnav.utils;
 
 import android.graphics.Bitmap;
 import android.util.LruCache;
