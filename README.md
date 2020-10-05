@@ -63,8 +63,7 @@ To fix a bug or enhance an existing module, follow these steps:
   
 If you find a bug (the app couldn't handle the query and / or gave irrelevant results), kindly open an issue [here](https://github.com/thegenuinegourav/TravNav/issues/new) by including your search query and the expected result.  
   
-If you'd like to request a new functionality, feel free to do so by opening an issue [here](https://github.com/thegenuinegourav/TravNav/issues/new) including some sample queries and their corresponding results.  
-  
+If you'd like to request a new functionality, feel free to do so by opening an issue [here](https://github.com/thegenuinegourav/TravNav/issues/new) including some sample queries and their corresponding results.
   
 
 ### How to Build
@@ -81,4 +80,10 @@ If you'd like to request a new functionality, feel free to do so by opening an i
 <img src="screenshots/five.png" width="400"> <img src="screenshots/six.png" width="400">
 <img src="screenshots/seven.png" width="400"> <img src="screenshots/eight.png" width="400">
 <img src="screenshots/nine.png" width="400"> 
+
+
+
+
+## Authors
+* **Gourav Suri**  - [thegenuinegourav](https://github.com/thegenuinegourav)
 
