@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">TravNav</string>
-    <string name="google_maps_API_key">{google-maps-api-key}</string>
+    <string name="google_maps_API_key">AIzaSyCFJJs18usHZVB6U19Jb5OhN1pmbTy25ug</string>
     <string name="text1">The museum is housed in the Louvre Palace, originally built as a fortress in the late 12th century…</string>
     <string name="text2">Gwanghwamun is the main and largest gate of Gyeongbokgung Palace, in Jongno-gu, Seoul, South Korea.</string>
     <string name="text3">Tower Bridge is a combined bascule and suspension bridge in London built in 1886–1894.</string>
